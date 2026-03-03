@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% block title %}Owner Dashboard – LocalServices{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Konst Dashboard Theme ──────────────────────────────────────────── */
+  :root {
+    --konst-red: #d32f2f;
+    --konst-red-hover: #b71c1c;
+    --konst-dark: #1a1a1a;
+    --konst-text: #666666;
+    --konst-bg: #ffffff;
+    --konst-bg-alt: #f8f9fa;
+    --konst-border: #eaeaea;
+  }
+
+  /* ── Dashboard Hero ─────────────────────────────────────── */
+  .dashboard-hero {
+    background: var(--konst-dark);
+    padding: 3.5rem 3rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
+
+  .dashboard-hero::before {
+    display: none;
+  }
+
+  .dashboard-hero-title {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    text-transform: uppercase;
+  }
+
+  .dashboard-hero-title span {
+    color: var(--konst-red);
+    background: none;
+    -webkit-text-fill-color: initial;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+  }
+
+  .dashboard-hero-subtitle {
+    font-size: 1.05rem;
+    color: #aaaaaa;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2rem;
+    font-weight: 500;
+  }
+
+  .dashboard-hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+
+  .btn-primary-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.75rem;
+    background: var(--konst-red);
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    border-radius: 0;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: background 0.2s;
+    box-shadow: none;
+  }
+
+  .btn-primary-hero:hover {
+    background: var(--konst-red-hover);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-secondary-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.75rem;
+    background: transparent;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    border-radius: 0;
+    text-decoration: none;
+    border: 2px solid #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary-hero:hover {
+    border-color: var(--konst-red);
+    color: var(--konst-red);
+    transform: none;
+  }
+
+  /* ── Stats Row ──────────────────────────────────────────── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .stat-card {
+    background: #ffffff;
+    border: 2px solid var(--konst-border);
+    border-radius: 0;
+    padding: 1.75rem;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: all 0.2s;
+  }
+
+  .stat-card:hover {
+    border-color: var(--konst-dark);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .stat-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 0;
+    background: var(--konst-bg-alt);
+    border: 2px solid var(--konst-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--konst-dark);
+    transition: all 0.2s;
+  }
+
+  .stat-card:hover .stat-icon {
+    border-color: var(--konst-red);
+    color: var(--konst-red);
+  }
+
+  .stat-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
+  }
+
+  .stat-info .stat-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--konst-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-info .stat-value {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: var(--konst-dark);
+    letter-spacing: -0.02em;
+  }
+
+  /* ── Section Heading ────────────────────────────────────── */
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-heading::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 1.8rem;
+    background: var(--konst-red);
+    border-radius: 0;
+    flex-shrink: 0;
+  }
+
+  .section-heading h2 {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--konst-dark);
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── Quick Links ────────────────────────────────────────── */
+  .quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .quick-link-card {
+    background: #ffffff;
+    border: 2px solid var(--konst-border);
+    border-radius: 0;
+    padding: 1.75rem;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: all 0.2s;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quick-link-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 24px 24px;
+    border-color: transparent transparent transparent transparent;
+    transition: border-color 0.2s;
+  }
+
+  .quick-link-card:hover {
+    border-color: var(--konst-dark);
+    transform: none;
+  }
+
+  .quick-link-card:hover::after {
+    border-color: transparent transparent var(--konst-red) transparent;
+  }
+
+  .quick-link-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 0;
+    background: var(--konst-bg-alt);
+    border: 2px solid var(--konst-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--konst-dark);
+    transition: all 0.2s;
+  }
+
+  .quick-link-card:hover .quick-link-icon {
+    border-color: var(--konst-red);
+    color: var(--konst-red);
+  }
+
+  .quick-link-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+  }
+
+  .quick-link-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--konst-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .quick-link-desc {
+    font-size: 0.9rem;
+    color: var(--konst-text);
+    font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .dashboard-hero { padding: 2.5rem 1.5rem; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <!-- ═══ HERO ══════════════════════════════════════════════ -->
+  <div class="dashboard-hero">
+    <h1 class="dashboard-hero-title">Welcome, <span>{{ request.user.name }}!</span></h1>
+    <p class="dashboard-hero-subtitle">Owner Dashboard – manage your services and bookings here.</p>
+    <div class="dashboard-hero-actions">
+      <a href="{% url 'home' %}" class="btn-primary-hero">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Manage Services
+      </a>
+      <a href="{% url 'home' %}" class="btn-secondary-hero">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        View Bookings
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══ STATS ══════════════════════════════════════════════ -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">My Services</div>
+        <div class="stat-value">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Total Bookings</div>
+        <div class="stat-value">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ QUICK LINKS ════════════════════════════════════════ -->
+  <div class="section-heading">
+    <h2>Quick Actions</h2>
+  </div>
+  <div class="quick-links-grid">
+    <a href="{% url 'home' %}" class="quick-link-card">
+      <div class="quick-link-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
+      <div class="quick-link-title">Add Service</div>
+      <div class="quick-link-desc">List a new service for customers to book.</div>
+    </a>
+    <a href="{% url 'home' %}" class="quick-link-card">
+      <div class="quick-link-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="quick-link-title">Manage Bookings</div>
+      <div class="quick-link-desc">Review and update booking status requests.</div>
+    </a>
+    <a href="{% url 'home' %}" class="quick-link-card">
+      <div class="quick-link-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      </div>
+      <div class="quick-link-title">My Services</div>
+      <div class="quick-link-desc">View and edit your listed services.</div>
+    </a>
+    <a href="{% url 'home' %}" class="quick-link-card">
+      <div class="quick-link-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="quick-link-title">My Profile</div>
+      <div class="quick-link-desc">Update your business details and preferences.</div>
+    </a>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,339 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify OTP – LocalServices Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+  <style>
+    /* ── Konst Theme Base ───────────────────────────────────────────────── */
+    :root {
+      --konst-red: #d32f2f;
+      --konst-red-hover: #b71c1c;
+      --konst-dark: #1a1a1a;
+      --konst-text: #666666;
+      --konst-bg: #ffffff;
+      --konst-bg-alt: #f8f9fa;
+      --konst-border: #eaeaea;
+    }
+
+    body {
+      background-color: var(--konst-bg-alt);
+      color: var(--konst-text);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+    }
+
+    /* ── NAVBAR ─────────────────────────────────────────────── */
+    .site-navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4rem;
+      height: 80px;
+      background: var(--konst-bg);
+      border-bottom: 1px solid var(--konst-border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .site-navbar .brand {
+      font-size: 1.6rem; font-weight: 900; letter-spacing: -0.02em;
+      text-decoration: none; color: var(--konst-dark); text-transform: uppercase; display: flex; align-items: center;
+    }
+    .site-navbar .brand span {
+      color: var(--konst-red); margin-left: 4px;
+    }
+
+    /* ── AUTH PAGE ────────────────────────────────── */
+    .auth-page {
+      min-height: calc(100vh - 80px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border: 1px solid var(--konst-border);
+      border-radius: 0;
+      padding: 3.5rem 3rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    /* Shield icon */
+    .otp-icon {
+      width: 68px; height: 68px;
+      background: var(--konst-dark);
+      border-radius: 0;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+    .otp-icon svg { width: 32px; height: 32px; stroke: #fff; fill: none; stroke-width: 2; }
+
+    .auth-page-title {
+      font-size: 1.8rem; font-weight: 900;
+      color: var(--konst-dark); letter-spacing: -0.02em;
+      margin-bottom: 0.5rem; text-transform: uppercase;
+    }
+    .auth-page-sub {
+      font-size: 0.95rem; color: var(--konst-text); margin-bottom: 0.25rem;
+    }
+    .email-highlight {
+      font-size: 0.95rem; font-weight: 700;
+      color: var(--konst-red);
+      margin-bottom: 2rem;
+      display: block;
+    }
+
+    /* Alert messages */
+    .msg-list { margin-bottom: 1.5rem; text-align: left; }
+    .msg-item {
+      padding: 1rem;
+      font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;
+      background: #fdf5f5; border-left: 4px solid var(--konst-red); color: var(--konst-red);
+    }
+    .msg-item.success {
+      background: #ecfdf5; border-left-color: #10b981;
+      color: #047857;
+    }
+
+    /* ── OTP BOXES ────────────────────────────────── */
+    .otp-boxes {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .otp-digit {
+      width: 56px; height: 62px;
+      text-align: center;
+      font-size: 1.5rem; font-weight: 800;
+      font-family: 'Inter', sans-serif;
+      color: var(--konst-dark);
+      background: var(--konst-bg);
+      border: 2px solid var(--konst-border);
+      border-radius: 0;
+      outline: none;
+      transition: all 0.2s ease;
+      caret-color: var(--konst-red);
+    }
+    .otp-digit:focus {
+      border-color: var(--konst-dark);
+    }
+    .otp-digit.filled {
+      border-color: var(--konst-dark);
+    }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      padding: 1.25rem;
+      background: var(--konst-red);
+      color: #ffffff; border: none;
+      border-radius: 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-bottom: 1.5rem;
+    }
+    .submit-btn:hover { background: var(--konst-red-hover); }
+    .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* Timer */
+    .otp-timer {
+      font-size: 0.9rem;
+      color: var(--konst-text);
+      margin-bottom: 1.25rem;
+      font-weight: 600;
+    }
+    .otp-timer span { font-weight: 800; color: var(--konst-dark); }
+    .otp-timer.expired span { color: var(--konst-red); }
+
+    /* Resend */
+    .resend-row {
+      font-size: 0.9rem;
+      color: var(--konst-text);
+      margin-bottom: 1rem;
+    }
+    .resend-btn {
+      background: none; border: none; padding: 0;
+      font-size: 0.9rem; font-weight: 700;
+      color: var(--konst-dark); cursor: pointer;
+      text-decoration: underline; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .resend-btn:hover { color: var(--konst-red); }
+    .resend-btn:disabled { color: #aaa; cursor: not-allowed; text-decoration: none; }
+
+    /* Back link */
+    .back-link {
+      display: block; margin-top: 1rem;
+      font-size: 0.9rem; font-weight: 700; color: var(--konst-text);
+      text-decoration: none; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--konst-dark); }
+
+    @media (max-width: 560px) {
+      .site-navbar { padding: 0 1.5rem; }
+      .auth-box { padding: 2.5rem 1.5rem; }
+      .otp-digit { width: 44px; height: 52px; font-size: 1.25rem; }
+      .otp-boxes { gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="site-navbar">
+    <a href="{% url 'home' %}" class="brand">LocalServices <span>Management</span></a>
+  </nav>
+
+  <!-- OTP PAGE -->
+  <div class="auth-page">
+    <div class="auth-box">
+
+      <!-- Shield icon -->
+      <div class="otp-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z"/>
+          <polyline points="9 12 11 14 15 10"/>
+        </svg>
+      </div>
+
+      <h1 class="auth-page-title">Verify Your Email</h1>
+      <p class="auth-page-sub">We sent a 6-digit OTP to</p>
+      <span class="email-highlight">{{ email }}</span>
+
+      {% if messages %}
+      <div class="msg-list">
+        {% for message in messages %}
+        <div class="msg-item {% if message.tags == 'success' %}success{% endif %}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- OTP Verify Form -->
+      <form method="POST" id="otp-form" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="verify">
+
+        <div class="otp-boxes">
+          <input class="otp-digit" type="text" name="d1" id="d1" maxlength="1" autocomplete="one-time-code" inputmode="numeric" autofocus>
+          <input class="otp-digit" type="text" name="d2" id="d2" maxlength="1" inputmode="numeric">
+          <input class="otp-digit" type="text" name="d3" id="d3" maxlength="1" inputmode="numeric">
+          <input class="otp-digit" type="text" name="d4" id="d4" maxlength="1" inputmode="numeric">
+          <input class="otp-digit" type="text" name="d5" id="d5" maxlength="1" inputmode="numeric">
+          <input class="otp-digit" type="text" name="d6" id="d6" maxlength="1" inputmode="numeric">
+        </div>
+
+        <!-- Timer -->
+        <div class="otp-timer" id="timer-wrap">
+          OTP expires in <span id="countdown">10:00</span>
+        </div>
+
+        <button type="submit" class="submit-btn" id="verify-btn">Verify OTP</button>
+      </form>
+
+      <!-- Resend Form -->
+      <form method="POST" id="resend-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="resend">
+        <div class="resend-row">
+          Didn't receive it?&nbsp;
+          <button type="submit" class="resend-btn" id="resend-btn" disabled>Resend OTP</button>
+        </div>
+      </form>
+
+      <a href="{% url 'core:signup' %}" class="back-link">← Back to Sign Up</a>
+    </div>
+  </div>
+
+  <script>
+    // ── Auto-focus next digit box ──────────────────────────────────
+    const digits = document.querySelectorAll('.otp-digit');
+
+    digits.forEach((input, idx) => {
+      input.addEventListener('input', function () {
+        // Allow only digits
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value) {
+          this.classList.add('filled');
+          if (idx < digits.length - 1) digits[idx + 1].focus();
+        } else {
+          this.classList.remove('filled');
+        }
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !this.value && idx > 0) {
+          digits[idx - 1].focus();
+          digits[idx - 1].value = '';
+          digits[idx - 1].classList.remove('filled');
+        }
+        // Allow only number keys, backspace, tab, arrow keys
+        if (!/^\d$/.test(e.key) && !['Backspace','Tab','ArrowLeft','ArrowRight','Delete'].includes(e.key)) {
+          e.preventDefault();
+        }
+      });
+
+      // Handle paste — spread digits across boxes
+      input.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+        pasted.split('').forEach((ch, i) => {
+          if (digits[i]) {
+            digits[i].value = ch;
+            digits[i].classList.add('filled');
+          }
+        });
+        const next = digits[Math.min(pasted.length, digits.length - 1)];
+        if (next) next.focus();
+      });
+    });
+
+    // ── Auto-submit when all 6 digits filled ──────────────────────
+    function checkAllFilled() {
+      const allFilled = [...digits].every(d => d.value.length === 1);
+      if (allFilled) document.getElementById('otp-form').submit();
+    }
+    digits.forEach(d => d.addEventListener('input', checkAllFilled));
+
+    // ── Countdown timer (10 minutes = 600 seconds) ──────────────
+    let secondsLeft = 600;
+    const countdownEl = document.getElementById('countdown');
+    const timerWrap   = document.getElementById('timer-wrap');
+    const resendBtn   = document.getElementById('resend-btn');
+    const verifyBtn   = document.getElementById('verify-btn');
+
+    const timer = setInterval(() => {
+      secondsLeft--;
+      const m = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+      const s = String(secondsLeft % 60).padStart(2, '0');
+      countdownEl.textContent = `${m}:${s}`;
+
+      if (secondsLeft <= 0) {
+        clearInterval(timer);
+        countdownEl.textContent = 'Expired';
+        timerWrap.classList.add('expired');
+        verifyBtn.disabled = true;
+        resendBtn.disabled = false;
+      }
+
+      // Enable resend button after 30 seconds
+      if (secondsLeft <= 570) {
+        resendBtn.disabled = false;
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

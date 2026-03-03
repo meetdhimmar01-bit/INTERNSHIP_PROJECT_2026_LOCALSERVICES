@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  /* ── Konst Theme List Styles ────────────────────── */
+  .list-hero {
+    background: var(--konst-dark);
+    padding: 6rem 4rem;
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+    color: #fff;
+    margin-bottom: 3rem;
+  }
+
+  .list-hero::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; width: 50%;
+    /* Reused background image snippet */
+    background: url('{% static "images/hero-bg.png" %}') center/cover;
+    clip-path: polygon(25% 0, 100% 0, 100% 100%, 0% 100%);
+    opacity: 0.2;
+  }
+
+  .list-hero-title {
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .list-hero-title span {
+    color: var(--konst-red);
+  }
+
+  .list-hero-subtitle {
+    font-size: 1.1rem;
+    color: #aaa;
+    position: relative;
+    z-index: 2;
+    margin-bottom: 2rem;
+    max-width: 60%;
+  }
+
+  /* ── SEARCH BAR ──────────────────────────────────────── */
+  .search-bar-wrap {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 680px;
+    background: #fff;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 2;
+  }
+
+  .search-icon {
+    padding: 0 1.25rem;
+    color: var(--konst-dark);
+    display: flex;
+    align-items: center;
+  }
+
+  .search-bar-wrap input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 1.25rem 0;
+    font-family: "Inter", sans-serif;
+    font-size: 1.05rem;
+    color: var(--konst-dark);
+    background: transparent;
+  }
+
+  .search-btn {
+    padding: 1.25rem 2.5rem;
+    background: var(--konst-red);
+    color: #ffffff;
+    border: none;
+    font-family: "Inter", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-transform: uppercase;
+  }
+
+  .search-btn:hover {
+    background: var(--konst-red-hover);
+  }
+
+  /* ── SECTION HEADING ──────────────────────────────────── */
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+    padding: 0 4rem;
+    margin-top: 3rem;
+  }
+
+  .section-heading::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 1.8rem;
+    background: var(--konst-red);
+    flex-shrink: 0;
+  }
+
+  .section-heading h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--konst-dark);
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  /* ── SERVICES GRID ──────────────────────────────────── */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 6rem;
+    padding: 0 4rem;
+  }
+
+  .service-card {
+    background: #fff;
+    border: 1px solid var(--konst-border);
+    border-radius: 0;
+    padding: 2.5rem;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    position: relative;
+  }
+
+  .service-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 60px; height: 60px;
+    background: var(--konst-red);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .service-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .service-card:hover::after {
+    opacity: 1;
+  }
+
+  .svc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+  }
+
+  .svc-icon {
+    background: rgba(211, 47, 47, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--konst-red);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .svc-icon-sm { width: 60px; height: 60px; }
+  .svc-icon-md { width: 90px; height: 90px; }
+  .svc-icon-lg { width: 130px; height: 130px; }
+
+  .svc-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .svc-price {
+    text-align: right;
+  }
+
+  .svc-price-amt {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--konst-dark);
+  }
+
+  .svc-price-lbl {
+    font-size: 0.8rem;
+    color: var(--konst-text);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .svc-cat {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--konst-red);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .svc-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--konst-dark);
+  }
+
+  @media (max-width: 900px) {
+    .list-hero { padding: 4rem 2rem; }
+    .list-hero-title, .list-hero-subtitle { max-width: 100%; }
+    .section-heading, .services-grid { padding: 0 2rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <div class="list-hero">
+    <h1 class="list-hero-title">All available <span>services</span></h1>
+    <p class="list-hero-subtitle">Browse through our comprehensive list of verified professional services.</p>
+    
+    <form method="GET" action="{% url 'services:list' %}" class="search-bar-wrap">
+      <div class="search-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+      <input type="text" name="q" value="{{ query }}" placeholder="Search all services..." autocomplete="off" />
+      <button type="submit" class="search-btn">Search</button>
+    </form>
+  </div>
+
+  <div class="section-heading">
+    <h2>
+        {% if query %}
+            Search Results for "{{ query }}"
+        {% else %}
+            Services Directory
+        {% endif %}
+    </h2>
+  </div>
+
+  <div class="services-grid">
+    {% for service in services %}
+    <a href="#" class="service-card">
+      <div class="svc-top">
+        <div class="svc-icon {% if service.image %}{% if service.category.name|lower == 'plumbing' or service.category.name|lower == 'electrical' %}svc-icon-lg{% else %}svc-icon-md{% endif %}{% else %}svc-icon-sm{% endif %}">
+          {% if service.image %}
+            <img src="{{ service.image.url }}" alt="{{ service.name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+          {% else %}
+            {% if service.category.name|lower == "plumbing" %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+            {% elif service.category.name|lower == "electrical" %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            {% elif service.category.name|lower == "cleaning" %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+            {% elif service.category.name|lower == "carpentry" %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/></svg>
+            {% elif service.category.name|lower == "appliance repair" or service.category.name|lower == "repair" %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            {% elif service.category.name|lower == "painting" %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="m22 20-3-3"/><path d="M22 16v4a2 2 0 0 1-2 2h-4"/></svg>
+            {% else %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="svc-price">
+          <div class="svc-price-amt">₹{{ service.base_price }}</div>
+          <div class="svc-price-lbl">Base price</div>
+        </div>
+      </div>
+      <div class="svc-cat">{{ service.category.name }}</div>
+      <div class="svc-name">{{ service.name }}</div>
+    </a>
+    {% empty %}
+    <div style="grid-column: 1/-1; padding: 4rem; text-align: center; border: 1px dashed var(--konst-border); background: #fff;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--konst-text)" stroke-width="1" style="margin-bottom: 1rem"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <p style="color: var(--konst-text); font-size: 1.1rem">No services found.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+{% endblock %}

@@ -1,0 +1,221 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}LocalServices{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+    <style>
+      /* ── Konst Theme Base ───────────────────────────────────────────────── */
+      :root {
+        --konst-red: #d32f2f;
+        --konst-red-hover: #b71c1c;
+        --konst-dark: #1a1a1a;
+        --konst-text: #666666;
+        --konst-bg: #ffffff;
+        --konst-bg-alt: #f8f9fa;
+        --konst-border: #eaeaea;
+      }
+
+      body {
+        background-color: var(--konst-bg-alt);
+        color: var(--konst-text);
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── NAVBAR ─────────────────────────────────────────────── */
+      .site-navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 4rem;
+        height: 80px;
+        background: var(--konst-bg);
+        border-bottom: 1px solid var(--konst-border);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .site-navbar .brand {
+        font-size: 1.6rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        text-decoration: none;
+        color: var(--konst-dark);
+        display: flex;
+        align-items: center;
+        text-transform: uppercase;
+      }
+
+      .site-navbar .brand span {
+        color: var(--konst-red);
+        margin-left: 4px;
+      }
+
+      .site-navbar .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .site-navbar .nav-text-link {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--konst-text);
+        text-decoration: none;
+        padding: 0.5rem 0.5rem;
+        transition: color 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .site-navbar .nav-text-link:hover {
+        color: var(--konst-dark);
+      }
+
+      .site-navbar .btn-outline-nav {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--konst-dark);
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid var(--konst-border);
+        border-radius: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.2s;
+      }
+
+      .site-navbar .btn-outline-nav:hover {
+        border-color: var(--konst-dark);
+      }
+
+      .site-navbar .btn-nav-primary {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #fff;
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        background: var(--konst-red);
+        border-radius: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: background 0.2s;
+      }
+
+      .site-navbar .btn-nav-primary:hover {
+        background: var(--konst-red-hover);
+      }
+
+      /* ── CONTENT WRAPPER ────────────────────────────────────── */
+      .page-content {
+        flex: 1;
+        width: 100%;
+        margin: 0;
+        padding: 0; 
+      }
+
+      /* ── FOOTER ─────────────────────────────────────────────── */
+      .site-footer {
+        margin-top: auto;
+        padding: 3rem;
+        background: var(--konst-dark);
+        text-align: center;
+        font-size: 0.9rem;
+        color: #999;
+      }
+
+      /* ── MESSAGES ────────────────────────────────────────────── */
+      .messages-container {
+        max-width: 1280px;
+        margin: 1.5rem auto 0;
+        padding: 0 4rem;
+      }
+
+      /* Alert Messages Overrides for Konst */
+      .alert {
+        padding: 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        border-radius: 0;
+      }
+      .alert-success {
+        background: #ecfdf5; border-left: 4px solid #10b981; color: #047857;
+      }
+      .alert-danger, .alert-error {
+        background: #fdf5f5; border-left: 4px solid var(--konst-red); color: var(--konst-red);
+      }
+      .alert-info {
+        background: #eff6ff; border-left: 4px solid #3b82f6; color: #1d4ed8;
+      }
+
+      /* ── RESPONSIVE ─────────────────────────────────────────── */
+      @media (max-width: 900px) {
+        .site-navbar { padding: 0 1.5rem; }
+        .messages-container { padding: 0 1.5rem; }
+      }
+    </style>
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+
+    <!-- ═══ NAVBAR ════════════════════════════════════════════ -->
+    <nav class="site-navbar">
+      <a href="{% url 'home' %}" class="brand">
+        LocalServices <span>Management</span>
+      </a>
+      <div class="nav-right">
+        {% if request.path != '/' %}
+          <a href="{% url 'home' %}" class="nav-text-link">Home</a>
+        {% endif %}
+        <a href="{% url 'services:list' %}" class="nav-text-link">Find Services</a>
+        {% if user.is_authenticated %}
+          {% if 'dashboards' not in request.path %}
+            {% if user.role == 'owner' %}
+              <a href="{% url 'dashboards:owner' %}" class="btn-outline-nav">Dashboard</a>
+            {% elif user.role == 'admin' or user.is_superuser %}
+              <a href="{% url 'dashboards:admin' %}" class="btn-outline-nav">Dashboard</a>
+            {% else %}
+              <a href="{% url 'dashboards:user' %}" class="btn-outline-nav">Dashboard</a>
+            {% endif %}
+          {% endif %}
+          <a href="{% url 'core:logout' %}" class="btn-nav-primary">Logout</a>
+        {% else %}
+          <a href="{% url 'core:signup' %}" class="btn-outline-nav">Sign Up</a>
+          <a href="{% url 'core:login' %}" class="btn-nav-primary">Login</a>
+        {% endif %}
+      </div>
+    </nav>
+
+    <!-- ═══ MESSAGES ══════════════════════════════════════════ -->
+    {% if messages %}
+    <div class="messages-container">
+      {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-bottom: 0.5rem;">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ═══ MAIN CONTENT ══════════════════════════════════════ -->
+    <div class="page-content">
+      {% block content %}{% endblock %}
+    </div>
+
+    <!-- ═══ FOOTER ════════════════════════════════════════════ -->
+    <footer class="site-footer">
+      &copy; 2026 LocalServices Management. All rights reserved.
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>
