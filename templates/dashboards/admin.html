@@ -354,6 +354,15 @@
         <div class="stat-value">{{ total_owners|default:"0" }}</div>
       </div>
     </div>
+    <div class="stat-card" style="border-left:4px solid #f59e0b;">
+      <div class="stat-icon" style="color:#d97706;border-color:#fde68a;">
+        <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Pending Bookings</div>
+        <div class="stat-value" style="color:#d97706;">{{ pending_bookings|default:"0" }}</div>
+      </div>
+    </div>
   </div>
 
   <!-- ═══ PENDING ADMIN REQUESTS ════════════════════════════ -->
@@ -396,6 +405,99 @@
     </div>
     {% endfor %}
   </div>
+  {% endif %}
+
+  <!-- ═══ RECENT USERS ══════════════════════════════════════════════ -->
+  <div class="section-heading" style="margin-top:1rem;">
+    <h2>Recent Users</h2>
+  </div>
+  <div style="background:#fff;border:2px solid var(--konst-border);overflow-x:auto;margin-bottom:3rem;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+      <thead>
+        <tr style="background:var(--konst-dark);color:#fff;text-align:left;">
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Name</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Email</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Role</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Joined</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in recent_users %}
+        <tr style="border-bottom:1px solid var(--konst-border);">
+          <td style="padding:0.9rem 1.25rem;font-weight:700;color:var(--konst-dark);">{{ u.name }}</td>
+          <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">{{ u.email }}</td>
+          <td style="padding:0.9rem 1.25rem;">
+            <span style="display:inline-block;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;
+              background:{% if u.role == 'admin' %}#fee2e2{% elif u.role == 'owner' %}#dbeafe{% else %}#f3f4f6{% endif %};
+              color:{% if u.role == 'admin' %}#991b1b{% elif u.role == 'owner' %}#1e40af{% else %}#374151{% endif %};">{{ u.role }}</span>
+          </td>
+          <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">{{ u.date_joined|date:"d M Y" }}</td>
+          <td style="padding:0.9rem 1.25rem;">
+            {% if u.is_active %}
+              <span style="color:#16a34a;font-weight:700;font-size:0.82rem;">&#10003; Active</span>
+            {% else %}
+              <span style="color:#dc2626;font-weight:700;font-size:0.82rem;">&#10007; Inactive</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="padding:2rem;text-align:center;color:var(--konst-text);">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ RECENT BOOKINGS ══════════════════════════════════════════════ -->
+  <div class="section-heading">
+    <h2>Recent Bookings</h2>
+  </div>
+  {% if recent_bookings %}
+  <div style="background:#fff;border:2px solid var(--konst-border);overflow-x:auto;margin-bottom:3rem;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+      <thead>
+        <tr style="background:var(--konst-dark);color:#fff;text-align:left;">
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">#</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Service</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Customer</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Date</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Status</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Price</th>
+          <th style="padding:0.9rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in recent_bookings %}
+        <tr style="border-bottom:1px solid var(--konst-border);">
+          <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">#{{ booking.id }}</td>
+          <td style="padding:0.9rem 1.25rem;font-weight:700;color:var(--konst-dark);">{{ booking.service.name }}</td>
+          <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">{{ booking.customer.name }}</td>
+          <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">{{ booking.booking_date|date:"d M Y" }}</td>
+          <td style="padding:0.9rem 1.25rem;">
+            <span style="display:inline-block;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;
+              background:{% if booking.status == 'Completed' %}#dcfce7{% elif booking.status == 'Confirmed' %}#dbeafe{% elif booking.status == 'Cancelled' %}#fee2e2{% else %}#fef9c3{% endif %};
+              color:{% if booking.status == 'Completed' %}#166534{% elif booking.status == 'Confirmed' %}#1e40af{% elif booking.status == 'Cancelled' %}#991b1b{% else %}#854d0e{% endif %};">{{ booking.status }}</span>
+          </td>
+          <td style="padding:0.9rem 1.25rem;font-weight:800;color:var(--konst-dark);">&#8377;{{ booking.service.base_price }}</td>
+          <td style="padding:0.9rem 1.25rem;">
+            <form method="POST" action="{% url 'dashboards:admin_update_booking' booking.id %}" style="display:flex;gap:0.4rem;align-items:center;">
+              {% csrf_token %}
+              <select name="status" style="font-size:0.8rem;font-weight:600;border:1.5px solid var(--konst-border);padding:0.3rem 0.5rem;outline:none;font-family:inherit;">
+                <option {% if booking.status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option {% if booking.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                <option {% if booking.status == 'Completed' %}selected{% endif %}>Completed</option>
+                <option {% if booking.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+              </select>
+              <button type="submit" style="background:var(--konst-dark);color:#fff;border:none;padding:0.35rem 0.7rem;font-size:0.75rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">Set</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:2rem;border:2px dashed var(--konst-border);margin-bottom:3rem;color:var(--konst-text);">No bookings yet on the platform.</div>
   {% endif %}
 
   <!-- ═══ QUICK LINKS ════════════════════════════════════════ -->

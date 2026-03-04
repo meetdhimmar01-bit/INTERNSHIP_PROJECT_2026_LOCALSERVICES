@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Service – LocalServices{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root { --red:#d32f2f; --dark:#1a1a1a; --text:#666; --border:#eaeaea; --bg:#f8f9fa; }
+  .page-hero { background:var(--dark); padding:3.5rem 4rem 5rem; clip-path:polygon(0 0,100% 0,100% 82%,0 100%); margin-bottom:2rem; }
+  .page-hero h1 { font-size:clamp(1.8rem,4vw,2.8rem); font-weight:900; color:#fff; text-transform:uppercase; letter-spacing:-.02em; }
+  .page-hero h1 span { color:var(--red); }
+  .page-body { padding:0 4rem 4rem; max-width:800px; }
+  .back-link { display:inline-flex; align-items:center; gap:.5rem; margin-bottom:2.5rem; font-weight:700; color:var(--dark); text-decoration:none; font-size:.88rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:2px solid var(--red); padding-bottom:.15rem; }
+
+  .form-card { background:#fff; border:1px solid var(--border); padding:2.5rem 3rem; box-shadow:0 6px 24px rgba(0,0,0,.06); }
+  .form-group { margin-bottom:1.6rem; }
+  .form-label { display:block; font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--dark); margin-bottom:.6rem; }
+  .form-control { width:100%; padding:.9rem 1.1rem; border:2px solid var(--border); font-family:inherit; font-size:.95rem; color:var(--dark); outline:none; transition:border-color .2s; }
+  .form-control:focus { border-color:var(--dark); }
+  select.form-control { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 1rem center; padding-right:2.5rem; }
+  textarea.form-control { min-height:100px; resize:vertical; }
+  .form-hint { font-size:.8rem; color:var(--text); margin-top:.4rem; }
+
+  .toggle-row { display:flex; align-items:center; gap:1rem; }
+  .toggle-label { font-size:.95rem; color:var(--dark); font-weight:600; }
+  input[type="checkbox"] { width:1.1rem; height:1.1rem; accent-color:var(--red); cursor:pointer; }
+
+  .btn-submit { padding:1rem 3rem; background:var(--red); color:#fff; border:none; font-family:inherit; font-size:.95rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; cursor:pointer; transition:background .2s; }
+  .btn-submit:hover { background:#b71c1c; }
+  .btn-cancel { padding:1rem 2rem; background:transparent; color:var(--dark); border:2px solid var(--border); font-family:inherit; font-size:.95rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; cursor:pointer; text-decoration:none; display:inline-block; transition:border-color .2s; }
+  .btn-cancel:hover { border-color:var(--dark); }
+
+  .msg { padding:.8rem 1.25rem; font-size:.9rem; font-weight:600; margin-bottom:1.5rem; border-left:4px solid; }
+  .msg.error { background:#fef2f2; border-color:var(--red); color:#991b1b; }
+
+  .img-preview { margin-top:.75rem; width:100%; max-height:160px; object-fit:cover; display:none; border:2px solid var(--border); }
+
+  @media(max-width:900px) { .page-hero,.page-body{padding-left:1.5rem;padding-right:1.5rem;} .form-card{padding:1.75rem 1.5rem;} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <h1>{{ action }} <span>Service</span></h1>
+</div>
+
+<div class="page-body">
+  <a href="{% url 'dashboards:provider_services' %}" class="back-link">← Back to My Services</a>
+
+  {% for message in messages %}
+  <div class="msg error">{{ message }}</div>
+  {% endfor %}
+
+  <div class="form-card">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Name -->
+      <div class="form-group">
+        <label class="form-label" for="name">Service Name *</label>
+        <input type="text" id="name" name="name" class="form-control" value="{{ service.name|default:'' }}" placeholder="e.g. Pipe Leak Repair" required>
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label class="form-label" for="category">Category *</label>
+        <select id="category" name="category" class="form-control" required>
+          <option value="">— Select Category —</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if service.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label class="form-label" for="description">Description</label>
+        <textarea id="description" name="description" class="form-control" placeholder="Briefly describe what this service includes…">{{ service.description|default:'' }}</textarea>
+      </div>
+
+      <!-- Price -->
+      <div class="form-group">
+        <label class="form-label" for="base_price">Base Price (₹) *</label>
+        <input type="number" id="base_price" name="base_price" class="form-control" value="{{ service.base_price|default:'' }}" placeholder="e.g. 499" min="1" step="0.01" required>
+        <p class="form-hint">This is the starting price shown to customers.</p>
+      </div>
+
+      <!-- Image -->
+      <div class="form-group">
+        <label class="form-label" for="image">Service Image</label>
+        <input type="file" id="image" name="image" class="form-control" accept="image/*" onchange="previewImg(this)">
+        {% if service.image %}
+        <img id="img-preview" src="{{ service.image.url }}" class="img-preview" style="display:block;" alt="Current image">
+        {% else %}
+        <img id="img-preview" class="img-preview" alt="Preview">
+        {% endif %}
+        <p class="form-hint">Leave blank to keep the existing image (for edits).</p>
+      </div>
+
+      <!-- Active toggle (edit only) -->
+      {% if action == 'Edit' %}
+      <div class="form-group">
+        <label class="form-label">Visibility</label>
+        <div class="toggle-row">
+          <input type="checkbox" id="is_active" name="is_active" {% if service.is_active %}checked{% endif %}>
+          <label for="is_active" class="toggle-label">Service is active and visible to customers</label>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:2rem;">
+        <button type="submit" class="btn-submit">{{ action }} Service</button>
+        <a href="{% url 'dashboards:provider_services' %}" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function previewImg(input) {
+  const preview = document.getElementById('img-preview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

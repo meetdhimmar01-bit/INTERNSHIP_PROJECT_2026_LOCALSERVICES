@@ -1,0 +1,170 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leave a Review – LocalServices Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root { --red:#d32f2f; --dark:#1a1a1a; --text:#666; --border:#eaeaea; --bg:#f8f9fa; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); }
+
+    /* ── Navbar ── */
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 4rem; height: 72px; background: #fff;
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+    }
+    .brand { font-size: 1.5rem; font-weight: 900; color: var(--dark); text-decoration: none; text-transform: uppercase; }
+    .brand span { color: var(--red); }
+
+    /* ── Page ── */
+    .page { min-height: calc(100vh - 72px); display: flex; align-items: center; justify-content: center; padding: 3rem 1.5rem; }
+    .box {
+      width: 100%; max-width: 520px; background: #fff;
+      padding: 3rem 3.5rem; border: 1px solid var(--border);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+
+    /* ── Service info ── */
+    .service-chip {
+      display: inline-block; background: #f0f0f0; color: var(--dark);
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 0.4rem 0.9rem; margin-bottom: 1.5rem;
+    }
+    .title { font-size: 1.6rem; font-weight: 900; color: var(--dark); text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+    .subtitle { font-size: 0.9rem; color: var(--text); margin-bottom: 2rem; }
+
+    /* ── Messages ── */
+    .msg { padding: 0.8rem 1rem; font-size: 0.88rem; font-weight: 600; margin-bottom: 1rem; }
+    .msg.error { border-left: 4px solid var(--red); background: #fdf5f5; color: var(--red); }
+
+    /* ── Star Rating ── */
+    .stars-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dark); margin-bottom: 0.6rem; display: block; }
+    .star-row { display: flex; flex-direction: row-reverse; gap: 0.3rem; justify-content: flex-end; margin-bottom: 1.75rem; }
+    .star-row input[type="radio"] { display: none; }
+    .star-row label {
+      font-size: 2.2rem; cursor: pointer; color: #e0e0e0;
+      transition: color 0.15s, transform 0.1s;
+    }
+    .star-row label:hover,
+    .star-row label:hover ~ label,
+    .star-row input[type="radio"]:checked ~ label { color: #f59e0b; }
+    .star-row label:hover { transform: scale(1.15); }
+
+    /* ── Textarea ── */
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--dark); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .form-textarea {
+      width: 100%; padding: 0.9rem 1.25rem; min-height: 130px;
+      border: 2px solid var(--border); font-family: 'Inter', sans-serif;
+      font-size: 0.95rem; color: var(--dark); resize: vertical; outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-textarea:focus { border-color: var(--dark); }
+    .form-textarea::placeholder { color: #aaa; font-weight: 400; }
+
+    /* ── Booking Summary ── */
+    .summary {
+      background: #f8f9fa; border: 1px solid var(--border);
+      padding: 1rem 1.25rem; margin-bottom: 2rem; font-size: 0.88rem;
+    }
+    .summary-row { display: flex; justify-content: space-between; gap: 1rem; }
+    .summary-row + .summary-row { margin-top: 0.5rem; }
+    .summary-key { color: var(--text); font-weight: 600; }
+    .summary-val { font-weight: 800; color: var(--dark); text-align: right; }
+
+    /* ── Buttons ── */
+    .btn-submit {
+      width: 100%; padding: 1.05rem; background: var(--red); color: #fff;
+      border: none; font-family: 'Inter', sans-serif; font-size: 0.95rem;
+      font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+      cursor: pointer; margin-bottom: 0.75rem; transition: background 0.2s;
+    }
+    .btn-submit:hover { background: #b71c1c; }
+    .back-link { text-align: center; font-size: 0.88rem; }
+    .back-link a { color: var(--dark); font-weight: 700; text-decoration: none; border-bottom: 2px solid var(--red); }
+
+    @media (max-width: 600px) {
+      .navbar { padding: 0 1.5rem; }
+      .box { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="{% url 'home' %}" class="brand">LocalServices <span>Management</span></a>
+  </nav>
+
+  <div class="page">
+    <div class="box">
+
+      <span class="service-chip">Leave a Review</span>
+      <h1 class="title">Rate Your Experience</h1>
+      <p class="subtitle">Tell us how {{ booking.service.name }} went.</p>
+
+      {% if messages %}
+        {% for message in messages %}
+        <div class="msg error">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Booking Summary -->
+      <div class="summary">
+        <div class="summary-row">
+          <span class="summary-key">Service</span>
+          <span class="summary-val">{{ booking.service.name }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-key">Booking #</span>
+          <span class="summary-val">#{{ booking.id }}</span>
+        </div>
+        {% if booking.scheduled_date %}
+        <div class="summary-row">
+          <span class="summary-key">Date</span>
+          <span class="summary-val">{{ booking.scheduled_date }}</span>
+        </div>
+        {% endif %}
+        <div class="summary-row">
+          <span class="summary-key">Amount Paid</span>
+          <span class="summary-val">₹{{ booking.service.base_price }}</span>
+        </div>
+      </div>
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <!-- Star Rating -->
+        <label class="stars-label">Your Rating *</label>
+        <div class="star-row">
+          <input type="radio" name="rating" id="s5" value="5" required />
+          <label for="s5" title="Excellent">★</label>
+          <input type="radio" name="rating" id="s4" value="4" />
+          <label for="s4" title="Good">★</label>
+          <input type="radio" name="rating" id="s3" value="3" />
+          <label for="s3" title="Average">★</label>
+          <input type="radio" name="rating" id="s2" value="2" />
+          <label for="s2" title="Poor">★</label>
+          <input type="radio" name="rating" id="s1" value="1" />
+          <label for="s1" title="Terrible">★</label>
+        </div>
+
+        <!-- Comment -->
+        <div class="form-group">
+          <label class="form-label" for="comment">Your Comments (optional)</label>
+          <textarea id="comment" name="comment" class="form-textarea" placeholder="Share your experience — what went well? Anything to improve?"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Submit Review ★</button>
+      </form>
+
+      <p class="back-link"><a href="{% url 'dashboards:user' %}">← Back to Dashboard</a></p>
+
+    </div>
+  </div>
+
+</body>
+</html>

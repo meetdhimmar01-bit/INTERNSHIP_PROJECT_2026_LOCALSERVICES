@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}My Services – LocalServices{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root { --red:#d32f2f; --dark:#1a1a1a; --text:#666; --border:#eaeaea; --bg:#f8f9fa; }
+  .page-hero { background:var(--dark); padding:3.5rem 4rem 5rem; clip-path:polygon(0 0,100% 0,100% 85%,0 100%); margin-bottom:2rem; display:flex; align-items:flex-end; justify-content:space-between; gap:2rem; flex-wrap:wrap; }
+  .page-hero h1 { font-size:clamp(1.8rem,4vw,2.8rem); font-weight:900; color:#fff; text-transform:uppercase; letter-spacing:-.02em; }
+  .page-hero h1 span { color:var(--red); }
+  .page-hero p { color:#aaa; margin-top:.5rem; }
+  .btn-red { display:inline-flex; align-items:center; gap:.5rem; padding:.8rem 2rem; background:var(--red); color:#fff; font-weight:800; font-size:.9rem; text-decoration:none; text-transform:uppercase; letter-spacing:.05em; border:none; cursor:pointer; transition:background .2s; }
+  .btn-red:hover { background:#b71c1c; }
+  .page-body { padding:0 4rem 4rem; }
+
+  .section-heading { display:flex; align-items:center; gap:.75rem; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:2px solid var(--border); }
+  .section-heading::before { content:''; display:block; width:4px; height:1.4rem; background:var(--red); flex-shrink:0; }
+  .section-heading h2 { font-size:1.35rem; font-weight:800; color:var(--dark); margin:0; text-transform:uppercase; }
+
+  .services-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.5rem; }
+  .svc-card { background:#fff; border:1px solid var(--border); overflow:hidden; transition:box-shadow .2s; }
+  .svc-card:hover { box-shadow:0 8px 24px rgba(0,0,0,.1); }
+  .svc-img { width:100%; height:150px; object-fit:cover; display:block; background:#f0f0f0; }
+  .svc-img-placeholder { width:100%; height:150px; background:linear-gradient(135deg,#f0f0f0,#e0e0e0); display:flex; align-items:center; justify-content:center; color:#bbb; }
+  .svc-body { padding:1.25rem 1.5rem; }
+  .svc-cat { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--red); margin-bottom:.4rem; }
+  .svc-name { font-size:1.05rem; font-weight:800; color:var(--dark); margin-bottom:.5rem; }
+  .svc-desc { font-size:.85rem; color:var(--text); line-height:1.5; margin-bottom:1rem; min-height:2.5rem; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .svc-footer { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-top:1px solid var(--border); gap:.5rem; }
+  .svc-price { font-size:1.1rem; font-weight:900; color:var(--dark); }
+  .svc-actions { display:flex; gap:.5rem; }
+  .btn-edit { padding:.4rem .9rem; background:#dbeafe; color:#1e40af; border:none; font-size:.78rem; font-weight:700; text-transform:uppercase; cursor:pointer; text-decoration:none; letter-spacing:.04em; display:inline-block; }
+  .btn-del  { padding:.4rem .9rem; background:#fee2e2; color:#991b1b; border:none; font-size:.78rem; font-weight:700; text-transform:uppercase; cursor:pointer; letter-spacing:.04em; }
+  .badge-active   { display:inline-block; padding:.2rem .7rem; font-size:.7rem; font-weight:700; background:#dcfce7; color:#166534; text-transform:uppercase; margin-right:.5rem; }
+  .badge-inactive { display:inline-block; padding:.2rem .7rem; font-size:.7rem; font-weight:700; background:#f3f4f6; color:#6b7280; text-transform:uppercase; margin-right:.5rem; }
+
+  .msg { padding:.8rem 1.25rem; font-size:.9rem; font-weight:600; margin-bottom:1.5rem; border-left:4px solid; }
+  .msg.success { background:#f0fdf4; border-color:#22c55e; color:#166534; }
+  .msg.error   { background:#fef2f2; border-color:var(--red); color:#991b1b; }
+  .back-link { display:inline-flex; align-items:center; gap:.5rem; margin-bottom:2.5rem; font-weight:700; color:var(--dark); text-decoration:none; font-size:.88rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:2px solid var(--red); padding-bottom:.15rem; }
+
+  .empty-state { text-align:center; padding:4rem 2rem; border:2px dashed var(--border); background:#fff; }
+  .empty-state p { color:var(--text); margin:1rem 0 1.5rem; }
+  @media(max-width:900px) { .page-hero,.page-body{padding-left:1.5rem;padding-right:1.5rem;} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div>
+    <h1>My <span>Services</span></h1>
+    <p>Manage the services you offer to customers</p>
+  </div>
+  <a href="{% url 'dashboards:add_service' %}" class="btn-red">+ Add Service</a>
+</div>
+
+<div class="page-body">
+  <a href="{% url 'dashboards:owner' %}" class="back-link">← Back to Dashboard</a>
+
+  {% for message in messages %}
+  <div class="msg {% if message.tags == 'success' %}success{% else %}error{% endif %}">{{ message }}</div>
+  {% endfor %}
+
+  <div class="section-heading"><h2>Your Services ({{ my_services.count }})</h2></div>
+
+  {% if my_services %}
+  <div class="services-grid">
+    {% for svc in my_services %}
+    <div class="svc-card">
+      {% if svc.image %}
+        <img src="{{ svc.image.url }}" alt="{{ svc.name }}" class="svc-img">
+      {% else %}
+        <div class="svc-img-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m3 9 18-0"/><path d="m9 21 0-12"/></svg>
+        </div>
+      {% endif %}
+      <div class="svc-body">
+        <div class="svc-cat">{{ svc.category.name }}</div>
+        <div class="svc-name">{{ svc.name }}</div>
+        <div class="svc-desc">{{ svc.description|default:"No description provided." }}</div>
+        {% if svc.is_active %}<span class="badge-active">Active</span>{% else %}<span class="badge-inactive">Inactive</span>{% endif %}
+      </div>
+      <div class="svc-footer">
+        <span class="svc-price">₹{{ svc.base_price }}</span>
+        <div class="svc-actions">
+          <a href="{% url 'dashboards:edit_service' svc.id %}" class="btn-edit">✎ Edit</a>
+          <form method="POST" action="{% url 'dashboards:delete_service' svc.id %}" onsubmit="return confirm('Delete {{ svc.name }}?')" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-del">✕ Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="display:block;margin:0 auto;"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+    <p>You haven't added any services yet.</p>
+    <a href="{% url 'dashboards:add_service' %}" class="btn-red">+ Add Your First Service</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

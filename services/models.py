@@ -11,6 +11,7 @@ class Category(models.Model):
 
 class Service(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='services')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='owned_services')
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -39,9 +40,12 @@ class Booking(models.Model):
     )
 
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='customer_bookings')
-    provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='provider_bookings')
+    provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='provider_bookings')
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     booking_date = models.DateTimeField(auto_now_add=True)
+    scheduled_date = models.DateField(null=True, blank=True)
+    address = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
     payment_status = models.CharField(max_length=50, default='Unpaid')
 

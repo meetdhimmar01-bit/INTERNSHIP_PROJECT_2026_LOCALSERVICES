@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}My Earnings – LocalServices{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root { --red:#d32f2f; --dark:#1a1a1a; --text:#666; --border:#eaeaea; --bg:#f8f9fa; }
+  .page-hero { background:var(--dark); padding:3.5rem 4rem 5rem; clip-path:polygon(0 0,100% 0,100% 85%,0 100%); margin-bottom:2rem; }
+  .page-hero h1 { font-size:clamp(1.8rem,4vw,2.8rem); font-weight:900; color:#fff; text-transform:uppercase; letter-spacing:-.02em; }
+  .page-hero h1 span { color:var(--red); }
+  .page-hero p { color:#aaa; margin-top:.5rem; }
+  .page-body { padding:0 4rem 4rem; }
+
+  /* Stat cards */
+  .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:3rem; }
+  .stat-card { background:#fff; border:1px solid var(--border); padding:2rem 1.75rem; position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; top:0; left:0; width:4px; height:100%; }
+  .stat-card.total::before { background:var(--red); }
+  .stat-card.month::before { background:#1e40af; }
+  .stat-card.week::before  { background:#166534; }
+  .stat-label { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text); margin-bottom:.6rem; }
+  .stat-value { font-size:2.2rem; font-weight:900; color:var(--dark); letter-spacing:-.03em; }
+  .stat-unit  { font-size:.9rem; font-weight:600; color:var(--text); margin-top:.25rem; }
+
+  /* Section heading */
+  .section-heading { display:flex; align-items:center; gap:.75rem; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:2px solid var(--border); }
+  .section-heading::before { content:''; display:block; width:4px; height:1.4rem; background:var(--red); flex-shrink:0; }
+  .section-heading h2 { font-size:1.35rem; font-weight:800; color:var(--dark); margin:0; text-transform:uppercase; }
+
+  /* Earnings table */
+  .table-wrap { background:#fff; border:1px solid var(--border); overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:.9rem; }
+  thead tr { background:var(--dark); color:#fff; text-align:left; }
+  th { padding:.9rem 1.25rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+  tbody tr { border-bottom:1px solid var(--border); }
+  tbody tr:last-child { border-bottom:none; }
+  td { padding:.9rem 1.25rem; }
+
+  .badge-completed { display:inline-block; padding:.2rem .65rem; font-size:.75rem; font-weight:700; background:#dcfce7; color:#166534; text-transform:uppercase; }
+  .back-link { display:inline-flex; align-items:center; gap:.5rem; margin-bottom:2.5rem; font-weight:700; color:var(--dark); text-decoration:none; font-size:.88rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:2px solid var(--red); padding-bottom:.15rem; }
+
+  .empty-state { text-align:center; padding:4rem 2rem; border:2px dashed var(--border); background:#fff; }
+  .empty-state p { color:var(--text); margin-top:1rem; }
+  @media(max-width:900px) { .stats-grid{grid-template-columns:1fr;} .page-hero,.page-body{padding-left:1.5rem;padding-right:1.5rem;} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <h1>My <span>Earnings</span></h1>
+  <p>Revenue breakdown from completed bookings</p>
+</div>
+
+<div class="page-body">
+  <a href="{% url 'dashboards:owner' %}" class="back-link">← Back to Dashboard</a>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card total">
+      <div class="stat-label">Total Earnings</div>
+      <div class="stat-value">₹{{ total_earnings }}</div>
+      <div class="stat-unit">All time</div>
+    </div>
+    <div class="stat-card month">
+      <div class="stat-label">This Month</div>
+      <div class="stat-value">₹{{ month_earnings }}</div>
+      <div class="stat-unit">Since {{ month_start|default:"01st" }}</div>
+    </div>
+    <div class="stat-card week">
+      <div class="stat-label">This Week</div>
+      <div class="stat-value">₹{{ week_earnings }}</div>
+      <div class="stat-unit">Mon – Today</div>
+    </div>
+  </div>
+
+  <!-- Completed Bookings Table -->
+  <div class="section-heading"><h2>Completed Bookings</h2></div>
+
+  {% if completed_bookings %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Service</th>
+          <th>Customer</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in completed_bookings %}
+        <tr>
+          <td style="color:var(--text);">#{{ booking.id }}</td>
+          <td style="font-weight:700;color:var(--dark);">{{ booking.service.name }}</td>
+          <td style="color:var(--text);">{{ booking.customer.name }}</td>
+          <td style="color:var(--text);">{{ booking.booking_date|date:"d M Y" }}</td>
+          <td><span class="badge-completed">Completed</span></td>
+          <td style="font-weight:800;color:var(--dark);">₹{{ booking.service.base_price }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="display:block;margin:0 auto;">
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+    </svg>
+    <p>No completed bookings yet. Earnings will show here once bookings are completed.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

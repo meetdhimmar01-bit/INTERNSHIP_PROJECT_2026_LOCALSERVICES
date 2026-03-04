@@ -1,0 +1,531 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  /* ── Detail Hero ───────────────────────────────────────── */
+  .detail-hero {
+    background: var(--konst-dark);
+    padding: 5rem 4rem;
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+  }
+
+  .detail-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #1a1a1a 50%, #2a0a0a 100%);
+    z-index: 0;
+  }
+
+  .detail-hero-img-wrap {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .detail-hero-img {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--konst-red);
+    box-shadow: 0 0 40px rgba(211,47,47,0.4);
+  }
+
+  .detail-hero-img-placeholder {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(211,47,47,0.15);
+    border: 4px solid var(--konst-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--konst-red);
+  }
+
+  .detail-hero-img-placeholder svg {
+    width: 80px;
+    height: 80px;
+  }
+
+  .detail-hero-content {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+  }
+
+  .detail-category-badge {
+    display: inline-block;
+    background: var(--konst-red);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.35rem 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .detail-title {
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+  }
+
+  .detail-desc {
+    font-size: 1.05rem;
+    color: #bbb;
+    max-width: 600px;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  .detail-price-tag {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    background: rgba(211,47,47,0.15);
+    border: 1px solid var(--konst-red);
+    padding: 1rem 2rem;
+  }
+
+  .detail-price-amount {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #fff;
+  }
+
+  .detail-price-label {
+    font-size: 0.85rem;
+    color: #aaa;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* ── Stars ────────────────────────────────────── */
+  .stars {
+    display: inline-flex;
+    gap: 0.15rem;
+  }
+  .stars svg {
+    width: 16px; height: 16px;
+  }
+  .star-filled { color: #f59e0b; }
+  .star-empty  { color: #555; }
+
+  .avg-rating-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .avg-rating-num {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f59e0b;
+  }
+
+  .avg-rating-count {
+    font-size: 0.85rem;
+    color: #888;
+  }
+
+  /* ── Main Layout ────────────────────────────────── */
+  .detail-body {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 3rem;
+    padding: 4rem;
+    align-items: start;
+  }
+
+  /* ── Booking Card ───────────────────────────────── */
+  .booking-card {
+    background: #fff;
+    border: 1px solid var(--konst-border);
+    padding: 2.5rem;
+    position: sticky;
+    top: 100px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  }
+
+  .booking-card-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--konst-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .booking-card-subtitle {
+    font-size: 0.9rem;
+    color: var(--konst-text);
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--konst-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.6rem;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1.5px solid var(--konst-border);
+    font-family: "Inter", sans-serif;
+    font-size: 0.95rem;
+    color: var(--konst-dark);
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+
+  .form-control:focus {
+    border-color: var(--konst-red);
+    background: #fff;
+  }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .btn-book {
+    width: 100%;
+    padding: 1.1rem;
+    background: var(--konst-red);
+    color: #fff;
+    border: none;
+    font-family: "Inter", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    margin-top: 0.5rem;
+  }
+
+  .btn-book:hover {
+    background: var(--konst-red-hover);
+    transform: translateY(-2px);
+  }
+
+  .login-nudge {
+    text-align: center;
+    margin-top: 1.25rem;
+    font-size: 0.88rem;
+    color: var(--konst-text);
+  }
+
+  .login-nudge a {
+    color: var(--konst-red);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  /* ── Info / Reviews Section ─────────────────────── */
+  .section-block {
+    margin-bottom: 3rem;
+  }
+
+  .section-block-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--konst-border);
+  }
+
+  .section-block-title::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 1.5rem;
+    background: var(--konst-red);
+    flex-shrink: 0;
+  }
+
+  .section-block-title h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--konst-dark);
+    margin: 0;
+  }
+
+  /* ── Highlights ─────────────────────────────────── */
+  .highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .highlight-card {
+    background: #f9f9f9;
+    border: 1px solid var(--konst-border);
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .highlight-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(211,47,47,0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--konst-red);
+    margin: 0 auto 1rem;
+  }
+
+  .highlight-icon svg { width: 22px; height: 22px; }
+
+  .highlight-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--konst-text);
+    letter-spacing: 0.05em;
+  }
+
+  .highlight-val {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--konst-dark);
+    margin-top: 0.25rem;
+  }
+
+  /* ── Reviews ─────────────────────────────────────── */
+  .review-card {
+    background: #fff;
+    border: 1px solid var(--konst-border);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .reviewer-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--konst-dark);
+  }
+
+  .review-comment {
+    color: var(--konst-text);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .no-reviews {
+    text-align: center;
+    padding: 3rem;
+    border: 1px dashed var(--konst-border);
+    color: var(--konst-text);
+    font-size: 0.95rem;
+  }
+
+  /* ── Messages ───────────────────────────────────── */
+  .alert {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-left: 4px solid;
+  }
+
+  .alert-success { background: #f0fdf4; border-color: #22c55e; color: #166534; }
+  .alert-error   { background: #fef2f2; border-color: var(--konst-red); color: #991b1b; }
+
+  @media (max-width: 1024px) {
+    .detail-body { grid-template-columns: 1fr; padding: 2rem; }
+    .booking-card { position: static; }
+    .highlights-grid { grid-template-columns: repeat(2, 1fr); }
+    .detail-hero { flex-direction: column; padding: 3rem 2rem; gap: 2rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ── -->
+<div class="detail-hero">
+  <div class="detail-hero-img-wrap">
+    {% if service.image %}
+      <img src="{{ service.image.url }}" alt="{{ service.name }}" class="detail-hero-img" />
+    {% else %}
+      <div class="detail-hero-img-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="detail-hero-content">
+    <div class="detail-category-badge">{{ service.category.name }}</div>
+    <h1 class="detail-title">{{ service.name }}</h1>
+    {% if service.description %}
+      <p class="detail-desc">{{ service.description }}</p>
+    {% endif %}
+    <div class="detail-price-tag">
+      <span class="detail-price-amount">₹{{ service.base_price }}</span>
+      <span class="detail-price-label">Base Price</span>
+    </div>
+
+    {% if avg_rating %}
+    <div class="avg-rating-wrap">
+      <div class="stars">
+        {% for i in "12345" %}
+          <svg viewBox="0 0 24 24" fill="{% if forloop.counter <= avg_rating|floatformat:'0' %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" class="{% if forloop.counter <= avg_rating|floatformat:'0' %}star-filled{% else %}star-empty{% endif %}">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        {% endfor %}
+      </div>
+      <span class="avg-rating-num">{{ avg_rating|floatformat:1 }}</span>
+      <span class="avg-rating-count">({{ reviews.count }} review{{ reviews.count|pluralize }})</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Body ── -->
+<div class="detail-body">
+
+  <!-- Left: Info + Reviews -->
+  <div>
+    <!-- Messages -->
+    {% for message in messages %}
+      <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+
+    <!-- Highlights -->
+    <div class="section-block">
+      <div class="section-block-title"><h2>Service Highlights</h2></div>
+      <div class="highlights-grid">
+        <div class="highlight-card">
+          <div class="highlight-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="highlight-title">Availability</div>
+          <div class="highlight-val">Same Day</div>
+        </div>
+        <div class="highlight-card">
+          <div class="highlight-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="highlight-title">Guarantee</div>
+          <div class="highlight-val">30-Day Warranty</div>
+        </div>
+        <div class="highlight-card">
+          <div class="highlight-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="highlight-title">Professionals</div>
+          <div class="highlight-val">Verified Experts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews -->
+    <div class="section-block">
+      <div class="section-block-title"><h2>Customer Reviews</h2></div>
+      {% for review in reviews %}
+        <div class="review-card">
+          <div class="review-header">
+            <span class="reviewer-name">{{ review.booking.customer.name }}</span>
+            <div class="stars">
+              {% for i in "12345" %}
+                <svg viewBox="0 0 24 24" fill="{% if forloop.counter <= review.rating %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" class="{% if forloop.counter <= review.rating %}star-filled{% else %}star-empty{% endif %}">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              {% endfor %}
+            </div>
+          </div>
+          {% if review.comment %}
+            <p class="review-comment">{{ review.comment }}</p>
+          {% endif %}
+        </div>
+      {% empty %}
+        <div class="no-reviews">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:1rem;display:block;margin-left:auto;margin-right:auto;color:#ccc;"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+          No reviews yet. Be the first to book this service!
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Right: Booking Card -->
+  <div>
+    <div class="booking-card">
+      <div class="booking-card-title">Book This Service</div>
+      <div class="booking-card-subtitle">Fill in the details below to request a booking.</div>
+
+      {% if user.is_authenticated %}
+        <form method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="scheduled_date">Preferred Date</label>
+            <input type="date" id="scheduled_date" name="scheduled_date" class="form-control" required
+                   min="{% now 'Y-m-d' %}" />
+          </div>
+          <div class="form-group">
+            <label for="address">Your Address</label>
+            <textarea id="address" name="address" class="form-control" rows="3"
+                      placeholder="Enter your full address where service is needed" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="notes">Additional Notes <span style="font-weight:400;text-transform:none;color:#aaa;">(optional)</span></label>
+            <textarea id="notes" name="notes" class="form-control" rows="2"
+                      placeholder="Any specific instructions or requirements..."></textarea>
+          </div>
+          <button type="submit" class="btn-book">
+            Confirm Booking — ₹{{ service.base_price }}
+          </button>
+        </form>
+      {% else %}
+        <div style="text-align:center;padding:2rem 0;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--konst-red)" stroke-width="1.5" style="margin-bottom:1rem;"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <p style="color:var(--konst-text);margin-bottom:1.5rem;font-size:0.95rem;">Login to book this service and get started.</p>
+          <a href="{% url 'core:login' %}?next={{ request.path }}" class="btn-book" style="display:block;text-align:center;text-decoration:none;padding:1.1rem;">
+            Login to Book
+          </a>
+          <div class="login-nudge" style="margin-top:1rem;">
+            New user? <a href="{% url 'core:signup' %}">Sign up here</a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

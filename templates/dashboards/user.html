@@ -309,7 +309,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         Browse Services
       </a>
-      <a href="{% url 'home' %}" class="btn-secondary-hero">
+      <a href="{% url 'services:list' %}" class="btn-secondary-hero">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         My Bookings
       </a>
@@ -324,7 +324,7 @@
       </div>
       <div class="stat-info">
         <div class="stat-label">Total Bookings</div>
-        <div class="stat-value">0</div>
+        <div class="stat-value">{{ total_bookings }}</div>
       </div>
     </div>
     <div class="stat-card">
@@ -333,7 +333,7 @@
       </div>
       <div class="stat-info">
         <div class="stat-label">Pending</div>
-        <div class="stat-value">0</div>
+        <div class="stat-value">{{ pending_bookings }}</div>
       </div>
     </div>
     <div class="stat-card">
@@ -342,36 +342,92 @@
       </div>
       <div class="stat-info">
         <div class="stat-label">Completed</div>
-        <div class="stat-value">0</div>
+        <div class="stat-value">{{ completed_bookings }}</div>
       </div>
     </div>
   </div>
+
+  <!-- ═══ RECENT BOOKINGS ══════════════════════════════════════ -->
+  <div class="section-heading" style="margin-top:2.5rem;">
+    <h2>Recent Bookings</h2>
+  </div>
+
+  {% if recent_bookings %}
+  <div style="background:#fff;border:2px solid var(--konst-border);overflow-x:auto;margin-bottom:3rem;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.92rem;">
+      <thead>
+        <tr style="background:var(--konst-dark);color:#fff;text-align:left;">
+          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">#</th>
+          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Service</th>
+          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Date</th>
+          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Status</th>
+          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Payment</th>
+          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Price</th>
+          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in recent_bookings %}
+        <tr style="border-bottom:1px solid var(--konst-border);">
+          <td style="padding:1rem 1.25rem;color:var(--konst-text);">#{{ booking.id }}</td>
+          <td style="padding:1rem 1.25rem;font-weight:700;color:var(--konst-dark);">{{ booking.service.name }}</td>
+          <td style="padding:1rem 1.25rem;color:var(--konst-text);">{% if booking.scheduled_date %}{{ booking.scheduled_date }}{% else %}—{% endif %}</td>
+          <td style="padding:1rem 1.25rem;">
+            <span style="display:inline-block;padding:0.25rem 0.75rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;
+              background:{% if booking.status == 'Completed' %}#dcfce7{% elif booking.status == 'Confirmed' %}#dbeafe{% elif booking.status == 'Cancelled' %}#fee2e2{% else %}#fef9c3{% endif %};
+              color:{% if booking.status == 'Completed' %}#166534{% elif booking.status == 'Confirmed' %}#1e40af{% elif booking.status == 'Cancelled' %}#991b1b{% else %}#854d0e{% endif %};">
+              {{ booking.status }}
+            </span>
+          </td>
+          <td style="padding:1rem 1.25rem;color:var(--konst-text);">{{ booking.payment_status }}</td>
+          <td style="padding:1rem 1.25rem;font-weight:800;color:var(--konst-dark);">₹{{ booking.service.base_price }}</td>
+          <td style="padding:1rem 1.25rem;">
+            {% if booking.status == 'Pending' %}
+            <form method="POST" action="{% url 'dashboards:cancel_booking' booking.id %}" onsubmit="return confirm('Cancel this booking?')">
+              {% csrf_token %}
+              <button type="submit" style="background:#fee2e2;color:#991b1b;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">✕ Cancel</button>
+            </form>
+            {% elif booking.status == 'Completed' %}
+              {% if booking.review %}
+              <span style="color:#166534;font-size:0.82rem;font-weight:700;">✓ Reviewed</span>
+              {% else %}
+              <a href="{% url 'dashboards:leave_review' booking.id %}" style="display:inline-block;background:#fef9c3;color:#854d0e;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;text-decoration:none;letter-spacing:0.04em;">★ Review</a>
+              {% endif %}
+            {% else %}
+            <span style="color:#ccc;font-size:0.82rem;">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:3rem;border:2px dashed var(--konst-border);margin-bottom:3rem;">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="margin-bottom:1rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <p style="color:var(--konst-text);margin-bottom:1.5rem;">You haven't made any bookings yet.</p>
+    <a href="{% url 'services:list' %}" class="btn-primary-hero">Browse Services</a>
+  </div>
+  {% endif %}
 
   <!-- ═══ QUICK LINKS ════════════════════════════════════════ -->
   <div class="section-heading">
     <h2>Quick Actions</h2>
   </div>
-  <div class="quick-links-grid">
-    <a href="{% url 'home' %}" class="quick-link-card">
+  <div class="quick-links-grid" style="margin-bottom:3rem;">
+    <a href="{% url 'services:list' %}" class="quick-link-card">
       <div class="quick-link-icon">
         <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </div>
       <div class="quick-link-title">Browse Services</div>
       <div class="quick-link-desc">Find and book home services in your area.</div>
     </a>
-    <a href="{% url 'home' %}" class="quick-link-card">
+    <a href="{% url 'core:logout' %}" class="quick-link-card">
       <div class="quick-link-icon">
-        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </div>
-      <div class="quick-link-title">My Bookings</div>
-      <div class="quick-link-desc">Track status of your current and past bookings.</div>
-    </a>
-    <a href="{% url 'home' %}" class="quick-link-card">
-      <div class="quick-link-icon">
-        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <div class="quick-link-title">My Profile</div>
-      <div class="quick-link-desc">Update your personal details and preferences.</div>
+      <div class="quick-link-title">Logout</div>
+      <div class="quick-link-desc">Sign out of your account safely.</div>
     </a>
   </div>
 
