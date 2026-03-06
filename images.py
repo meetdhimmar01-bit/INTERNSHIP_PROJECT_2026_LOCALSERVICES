@@ -89,7 +89,7 @@ id_map = {
 
 def apply_by_name():
     """Apply images to services matched by name (uses older artifact directory)."""
-    print("\n── Applying images by SERVICE NAME ─────────────────────────────")
+    print("\n-- Applying images by SERVICE NAME --")
     for svc in Service.objects.all():
         img_name = image_map.get(svc.name)
         if not img_name:
@@ -99,14 +99,14 @@ def apply_by_name():
         if os.path.exists(src):
             with open(src, 'rb') as f:
                 svc.image.save(f"{svc.id}_{img_name}", File(f), save=True)
-            print(f"  [OK]    {svc.name} ← {img_name}")
+            print(f"  [OK]    {svc.name} <- {img_name}")
         else:
             print(f"  [MISS]  File not found: {src}")
 
 
 def apply_by_id():
     """Apply images to services matched by ID (uses newer artifact directory)."""
-    print("\n── Applying images by SERVICE ID ──────────────────────────────")
+    print("\n-- Applying images by SERVICE ID --")
     for s_id, img_name in id_map.items():
         src = os.path.join(ARTIFACT_NEW, img_name)
         try:
@@ -117,12 +117,26 @@ def apply_by_id():
         if os.path.exists(src):
             with open(src, 'rb') as f:
                 svc.image.save(f"{s_id}_{img_name}", File(f), save=True)
-            print(f"  [OK]    ID={s_id} {svc.name} ← {img_name}")
+            print(f"  [OK]    ID={s_id} {svc.name} <- {img_name}")
         else:
             print(f"  [MISS]  File not found: {src}")
 
 
+def check_missing_images():
+    """Check and print any services that are still missing an image."""
+    print("\n-- Checking for missing images --")
+    services = Service.objects.all()
+    missing = [s.name for s in services if not s.image]
+    print(f"Total services: {services.count()}")
+    print(f"Total missing: {len(missing)}")
+    if missing:
+        for idx, name in enumerate(missing, 1):
+            print(f"  {idx}. {name}")
+    else:
+        print("  All services have an image assigned!")
+
 if __name__ == '__main__':
     apply_by_name()
     apply_by_id()
+    check_missing_images()
     print("\nDone!")
