@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Chat with {{ other_user.name }} – LocalServices{% endblock %}
+{% block extra_css %}
+<style>
+.chat-page { max-width: 800px; margin: 2rem auto; padding: 0 1.5rem; display: flex; flex-direction: column; height: calc(100vh - 200px); }
+.chat-header { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; background: #fff; border: 1px solid var(--konst-border); border-bottom: none; }
+.chat-avatar { width: 44px; height: 44px; background: var(--konst-red); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
+.chat-header-info h3 { margin: 0; font-size: 1rem; font-weight: 800; color: var(--konst-dark); }
+.chat-header-info span { font-size: 0.8rem; color: #aaa; }
+.chat-back { margin-left: auto; color: var(--konst-text); text-decoration: none; font-size: 0.85rem; font-weight: 700; }
+
+.chat-messages { flex: 1; overflow-y: auto; padding: 1.5rem; background: #f8f9fa; border: 1px solid var(--konst-border); border-bottom: none; display: flex; flex-direction: column; gap: 0.8rem; }
+.msg-row { display: flex; }
+.msg-row.mine { justify-content: flex-end; }
+.msg-bubble { max-width: 70%; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.92rem; line-height: 1.5; }
+.msg-row:not(.mine) .msg-bubble { background: #fff; border: 1px solid var(--konst-border); color: var(--konst-dark); border-radius: 0 12px 12px 12px; }
+.msg-row.mine .msg-bubble { background: var(--konst-red); color: #fff; border-radius: 12px 0 12px 12px; }
+.msg-time { font-size: 0.7rem; margin-top: 4px; opacity: 0.6; text-align: right; }
+.msg-sender { font-size: 0.72rem; font-weight: 700; margin-bottom: 4px; opacity: 0.7; }
+
+.chat-input-bar { display: flex; gap: 0; border: 1px solid var(--konst-border); background: #fff; }
+.chat-input-bar textarea { flex: 1; padding: 1rem; font-size: 0.95rem; border: none; resize: none; height: 54px; font-family: inherit; outline: none; }
+.chat-send-btn { padding: 0 1.5rem; background: var(--konst-red); color: #fff; font-weight: 800; font-size: 0.9rem; border: none; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+.chat-send-btn:hover { background: var(--konst-red-hover); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-page">
+  <div class="chat-header">
+    <div class="chat-avatar">{{ other_user.name|first|upper }}</div>
+    <div class="chat-header-info">
+      <h3>{{ other_user.name }}</h3>
+      <span>{{ other_user.get_role_display }}</span>
+    </div>
+    <a href="{% url 'dashboards:inbox' %}" class="chat-back">← Inbox</a>
+  </div>
+
+  <div class="chat-messages" id="chat-messages">
+    {% for msg in messages %}
+    <div class="msg-row {% if msg.sender == request.user %}mine{% endif %}">
+      <div class="msg-bubble">
+        {% if msg.sender != request.user %}<div class="msg-sender">{{ msg.sender.name }}</div>{% endif %}
+        {{ msg.message }}
+        <div class="msg-time">{{ msg.timestamp|time:"H:i" }}</div>
+      </div>
+    </div>
+    {% empty %}
+    <div style="text-align:center; color:#aaa; margin-top:3rem;">
+      👋 Say hello! Start the conversation.
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="chat-input-bar">
+    <textarea id="msg-input" placeholder="Type a message..." rows="1"></textarea>
+    <button class="chat-send-btn" onclick="sendMessage()">Send ➤</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const otherUserId = "{{ other_user.id }}";
+let lastId = "{% if messages %}{{ messages.last.id }}{% else %}0{% endif %}";
+const container = document.getElementById('chat-messages');
+const csrfToken = '{{ csrf_token }}';
+
+function scrollBottom() { container.scrollTop = container.scrollHeight; }
+scrollBottom();
+
+function renderMsg(m) {
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (m.is_mine ? ' mine' : '');
+  row.innerHTML = `<div class="msg-bubble">
+    ${!m.is_mine ? `<div class="msg-sender">${m.sender}</div>` : ''}
+    ${m.message}
+    <div class="msg-time">${m.timestamp}</div>
+  </div>`;
+  container.appendChild(row);
+}
+
+function sendMessage() {
+  const textarea = document.getElementById('msg-input');
+  const text = textarea.value.trim();
+  if (!text) return;
+  textarea.value = '';
+
+  fetch('/dashboards/chat/send/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+    body: `receiver_id=${otherUserId}&message=${encodeURIComponent(text)}`,
+  }).then(r => r.json()).then(m => {
+    renderMsg(m);
+    lastId = m.id;
+    scrollBottom();
+  });
+}
+
+function pollMessages() {
+  fetch(`/dashboards/chat/messages/${otherUserId}/?since=${lastId}`)
+    .then(r => r.json())
+    .then(data => {
+      data.messages.forEach(m => {
+        if (!m.is_mine) {
+          renderMsg(m);
+          lastId = m.id;
+        }
+      });
+      if (data.messages.length > 0) scrollBottom();
+    }).catch(() => {});
+}
+setInterval(pollMessages, 3000);
+
+document.getElementById('msg-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+</script>
+{% endblock %}

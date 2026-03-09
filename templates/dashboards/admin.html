@@ -291,6 +291,19 @@
     font-weight: 500;
   }
 
+  .status-badge {
+    display: inline-block; padding: 0.2rem 0.65rem; font-size: 0.78rem;
+    font-weight: 700; text-transform: uppercase;
+  }
+  .role-admin { background: #fee2e2; color: #991b1b; }
+  .role-owner { background: #dbeafe; color: #1e40af; }
+  .role-user  { background: #f3f4f6; color: #374151; }
+
+  .status-completed { background: #dcfce7; color: #166534; }
+  .status-confirmed { background: #dbeafe; color: #1e40af; }
+  .status-cancelled { background: #fee2e2; color: #991b1b; }
+  .status-pending   { background: #fef9c3; color: #854d0e; }
+
   @media (max-width: 640px) {
     .dashboard-hero { padding: 2.5rem 1.5rem; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); }
     .stats-row { grid-template-columns: 1fr 1fr; }
@@ -365,6 +378,25 @@
     </div>
   </div>
 
+  <!-- ═══ REVENUE & ANALYTICS CHARTS ════════════════════════════════════════ -->
+  <div class="section-heading">
+    <h2>Platform Analytics</h2>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <div style="background:#fff; border:2px solid var(--konst-border); padding:1.5rem;">
+      <h3 style="font-size:1rem; font-weight:800; color:var(--konst-dark); margin-top:0; margin-bottom:1rem; text-align:center;">User Growth (Last 6 Months)</h3>
+      <canvas id="userGrowthChart" height="200"></canvas>
+    </div>
+    <div style="background:#fff; border:2px solid var(--konst-border); padding:1.5rem;">
+      <h3 style="font-size:1rem; font-weight:800; color:var(--konst-dark); margin-top:0; margin-bottom:1rem; text-align:center;">Bookings by Category</h3>
+      <canvas id="categoryChart" height="200"></canvas>
+    </div>
+    <div style="background:#fff; border:2px solid var(--konst-border); padding:1.5rem;">
+      <h3 style="font-size:1rem; font-weight:800; color:var(--konst-dark); margin-top:0; margin-bottom:1rem; text-align:center;">Top Performing Services</h3>
+      <canvas id="topServicesChart" height="200"></canvas>
+    </div>
+  </div>
+
   <!-- ═══ PENDING ADMIN REQUESTS ════════════════════════════ -->
   {% if pending_admins %}
   <div class="section-heading" style="margin-top: 0.5rem;">
@@ -428,9 +460,7 @@
           <td style="padding:0.9rem 1.25rem;font-weight:700;color:var(--konst-dark);">{{ u.name }}</td>
           <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">{{ u.email }}</td>
           <td style="padding:0.9rem 1.25rem;">
-            <span style="display:inline-block;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;
-              background:{% if u.role == 'admin' %}#fee2e2{% elif u.role == 'owner' %}#dbeafe{% else %}#f3f4f6{% endif %};
-              color:{% if u.role == 'admin' %}#991b1b{% elif u.role == 'owner' %}#1e40af{% else %}#374151{% endif %};">{{ u.role }}</span>
+            <span class="status-badge role-{{ u.role|default:'user' }}">{{ u.role }}</span>
           </td>
           <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">{{ u.date_joined|date:"d M Y" }}</td>
           <td style="padding:0.9rem 1.25rem;">
@@ -474,9 +504,7 @@
           <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">{{ booking.customer.name }}</td>
           <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">{{ booking.booking_date|date:"d M Y" }}</td>
           <td style="padding:0.9rem 1.25rem;">
-            <span style="display:inline-block;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;
-              background:{% if booking.status == 'Completed' %}#dcfce7{% elif booking.status == 'Confirmed' %}#dbeafe{% elif booking.status == 'Cancelled' %}#fee2e2{% else %}#fef9c3{% endif %};
-              color:{% if booking.status == 'Completed' %}#166534{% elif booking.status == 'Confirmed' %}#1e40af{% elif booking.status == 'Cancelled' %}#991b1b{% else %}#854d0e{% endif %};">{{ booking.status }}</span>
+            <span class="status-badge status-{{ booking.status|lower }}">{{ booking.status }}</span>
           </td>
           <td style="padding:0.9rem 1.25rem;font-weight:800;color:var(--konst-dark);">&#8377;{{ booking.service.base_price }}</td>
           <td style="padding:0.9rem 1.25rem;">
@@ -535,4 +563,95 @@
     </a>
   </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{ chart_user_months|json_script:"chartUserMonths" }}
+{{ chart_user_counts|json_script:"chartUserCounts" }}
+{{ chart_category_labels|json_script:"chartCatLabels" }}
+{{ chart_category_counts|json_script:"chartCatCounts" }}
+{{ chart_top_service_labels|json_script:"chartTopLabels" }}
+{{ chart_top_service_counts|json_script:"chartTopCounts" }}
+
+<script>
+  // User Growth Chart
+  const ugCtx = document.getElementById('userGrowthChart');
+  if (ugCtx) {
+    const userMonths = JSON.parse(document.getElementById('chartUserMonths').textContent);
+    const userCounts = JSON.parse(document.getElementById('chartUserCounts').textContent);
+    new Chart(ugCtx, {
+      type: 'line',
+      data: {
+        labels: userMonths,
+        datasets: [{
+          label: 'New Users',
+          data: userCounts,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#eaeaea' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Category Distribution Chart
+  const catCtx = document.getElementById('categoryChart');
+  if (catCtx) {
+    const catLabels = JSON.parse(document.getElementById('chartCatLabels').textContent);
+    const catCounts = JSON.parse(document.getElementById('chartCatCounts').textContent);
+    new Chart(catCtx, {
+      type: 'doughnut',
+      data: {
+        labels: catLabels,
+        datasets: [{
+          data: catCounts,
+          backgroundColor: ['#d32f2f', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  }
+
+  // Top Services Chart
+  const tsCtx = document.getElementById('topServicesChart');
+  if (tsCtx) {
+    const topLabels = JSON.parse(document.getElementById('chartTopLabels').textContent);
+    const topCounts = JSON.parse(document.getElementById('chartTopCounts').textContent);
+    new Chart(tsCtx, {
+      type: 'bar',
+      data: {
+        labels: topLabels,
+        datasets: [{
+          label: 'Bookings',
+          data: topCounts,
+          backgroundColor: '#10b981',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#eaeaea' }, ticks: { stepSize: 1 } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+</script>
 {% endblock %}

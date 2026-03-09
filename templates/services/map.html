@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Map View – LocalServices{% endblock %}
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+.map-page { display: flex; height: calc(100vh - 80px); }
+.map-sidebar { width: 400px; background: #fff; border-right: 1px solid var(--konst-border); display: flex; flex-direction: column; overflow: hidden; z-index: 500; }
+.map-sidebar-header { padding: 1.5rem; border-bottom: 1px solid var(--konst-border); }
+.map-sidebar-header h1 { font-size: 1.4rem; font-weight: 900; color: var(--konst-dark); margin: 0 0 0.5rem; }
+.map-sidebar-list { flex: 1; overflow-y: auto; padding: 1rem; }
+.map-card { padding: 1rem; border: 1px solid var(--konst-border); margin-bottom: 1rem; cursor: pointer; transition: all 0.2s; background: #fff; }
+.map-card:hover { border-color: var(--konst-red); transform: translateX(4px); }
+.map-card h3 { font-size: 1rem; font-weight: 800; color: var(--konst-dark); margin: 0 0 0.25rem; }
+.map-card p { font-size: 0.85rem; color: var(--konst-text); margin: 0 0 0.5rem; }
+.map-card .price { font-weight: 700; color: var(--konst-red); }
+#map { flex: 1; height: 100%; z-index: 100; }
+
+/* Custom Popup */
+.leaflet-popup-content-wrapper { border-radius: 0; padding: 0; }
+.leaflet-popup-content { margin: 0; }
+.map-popup-inner { padding: 1rem; min-width: 200px; }
+.map-popup-inner img { width: 100%; height: 120px; object-fit: cover; margin-bottom: 0.5rem; }
+.map-popup-inner h3 { font-size: 1rem; font-weight: 800; margin: 0 0 0.25rem; }
+.map-popup-inner p { font-size: 0.85rem; margin: 0 0 0.5rem; color: var(--konst-text); }
+.map-popup-inner a { display: block; text-align: center; background: var(--konst-red); color: #fff; text-decoration: none; padding: 0.5rem; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; }
+
+@media (max-width: 900px) {
+  .map-page { flex-direction: column; }
+  .map-sidebar { width: 100%; height: 300px; order: 2; }
+  #map { height: 400px; order: 1; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="map-page">
+  <div class="map-sidebar">
+    <div class="map-sidebar-header">
+      <h1>📍 Services Near You</h1>
+      <p style="font-size:0.85rem; color:var(--konst-text); margin:0;">Click a card to locate on map.</p>
+    </div>
+    <div class="map-sidebar-list">
+      {% for s in all_services %}
+      <div class="map-card" onclick="panToService({{ s.id }})">
+        <h3>{{ s.name }}</h3>
+        <p>{{ s.category.name }}</p>
+        <div class="price">₹{{ s.base_price }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div id="map"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const services = {{ services_json|safe }};
+const map = L.map('map').setView([20.5937, 78.9629], 5); // Default: India
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO',
+  subdomains: 'abcd',
+  maxZoom: 20
+}).addTo(map);
+
+const markers = {};
+
+// Add markers for services with location
+services.forEach(s => {
+  if (s.lat && s.lng) {
+    const popupHtml = `
+      <div class="map-popup-inner">
+        ${s.image ? `<img src="${s.image}" alt="${s.name}">` : ''}
+        <h3>${s.name}</h3>
+        <p>${s.category} • ₹${s.price}</p>
+        <a href="${s.url}">View Details</a>
+      </div>
+    `;
+    const marker = L.marker([s.lat, s.lng]).addTo(map).bindPopup(popupHtml);
+    markers[s.id] = marker;
+  }
+});
+
+function panToService(id) {
+  const marker = markers[id];
+  if (marker) {
+    map.flyTo(marker.getLatLng(), 14, { duration: 1.5 });
+    marker.openPopup();
+  }
+}
+
+// User Geolocation
+if ("geolocation" in navigator) {
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    L.circleMarker([lat, lng], { radius: 8, fillColor: '#3b82f6', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map).bindPopup('You are here');
+    map.flyTo([lat, lng], 11, { duration: 2 });
+  });
+}
+</script>
+{% endblock %}

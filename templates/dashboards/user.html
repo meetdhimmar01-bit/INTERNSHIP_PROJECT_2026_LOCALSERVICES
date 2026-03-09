@@ -291,6 +291,19 @@
     font-weight: 500;
   }
 
+  /* ── Status Badges ──────────────────────────────────────── */
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .status-completed { background: #dcfce7; color: #166534; }
+  .status-confirmed { background: #dbeafe; color: #1e40af; }
+  .status-cancelled { background: #fee2e2; color: #991b1b; }
+  .status-pending { background: #fef9c3; color: #854d0e; }
+
   @media (max-width: 640px) {
     .dashboard-hero { padding: 2.5rem 1.5rem; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); }
     .stats-row { grid-template-columns: 1fr 1fr; }
@@ -373,9 +386,7 @@
           <td style="padding:1rem 1.25rem;font-weight:700;color:var(--konst-dark);">{{ booking.service.name }}</td>
           <td style="padding:1rem 1.25rem;color:var(--konst-text);">{% if booking.scheduled_date %}{{ booking.scheduled_date }}{% else %}—{% endif %}</td>
           <td style="padding:1rem 1.25rem;">
-            <span style="display:inline-block;padding:0.25rem 0.75rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;
-              background:{% if booking.status == 'Completed' %}#dcfce7{% elif booking.status == 'Confirmed' %}#dbeafe{% elif booking.status == 'Cancelled' %}#fee2e2{% else %}#fef9c3{% endif %};
-              color:{% if booking.status == 'Completed' %}#166534{% elif booking.status == 'Confirmed' %}#1e40af{% elif booking.status == 'Cancelled' %}#991b1b{% else %}#854d0e{% endif %};">
+            <span class="status-badge {% if booking.status == 'Completed' %}status-completed{% elif booking.status == 'Confirmed' %}status-confirmed{% elif booking.status == 'Cancelled' %}status-cancelled{% else %}status-pending{% endif %}">
               {{ booking.status }}
             </span>
           </td>

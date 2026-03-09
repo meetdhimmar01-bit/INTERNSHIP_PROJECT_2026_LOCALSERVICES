@@ -123,13 +123,81 @@
     margin: 0;
   }
 
+  /* ── LAYOUT & SIDEBAR ──────────────────────────────────── */
+  .list-container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 3rem;
+    padding: 0 4rem;
+    margin-bottom: 6rem;
+    align-items: start;
+  }
+
+  .filter-sidebar {
+    background: #fff;
+    border: 1px solid var(--konst-border);
+    padding: 1.5rem;
+    position: sticky;
+    top: 100px;
+  }
+
+  .filter-sidebar h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--konst-dark);
+    margin: 0 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .filter-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--konst-text);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .filter-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--konst-border);
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    box-sizing: border-box;
+    background: #fafafa;
+  }
+
+  .filter-input:focus { border-color: var(--konst-red); background: #fff; }
+
+  .filter-row { display: flex; gap: 0.5rem; }
+
+  .btn-filter {
+    width: 100%;
+    padding: 1rem;
+    background: var(--konst-dark);
+    color: #fff;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-filter:hover { background: #000; }
+
   /* ── SERVICES GRID ──────────────────────────────────── */
   .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 2rem;
-    margin-bottom: 6rem;
-    padding: 0 4rem;
   }
 
   .service-card {
@@ -285,7 +353,61 @@
   </h2>
 </div>
 
-<div class="services-grid">
+<div class="list-container">
+  
+  <!-- Sidebar -->
+  <aside class="filter-sidebar">
+    <h3>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Filters
+    </h3>
+    <form method="GET" action="{% url 'services:list' %}">
+      {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+      
+      <div class="filter-group">
+        <label>Category</label>
+        <select name="category" class="filter-input">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if category_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Price Range (₹)</label>
+        <div class="filter-row">
+          <input type="number" name="min_price" class="filter-input" placeholder="Min" value="{{ min_price }}">
+          <input type="number" name="max_price" class="filter-input" placeholder="Max" value="{{ max_price }}">
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Min Rating</label>
+        <select name="min_rating" class="filter-input">
+          <option value="">Any Rating</option>
+          <option value="4" {% if min_rating == '4' %}selected{% endif %}>4+ Stars</option>
+          <option value="3" {% if min_rating == '3' %}selected{% endif %}>3+ Stars</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Sort By</label>
+        <select name="sort_by" class="filter-input">
+          <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest</option>
+          <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+          <option value="rating_desc" {% if sort_by == 'rating_desc' %}selected{% endif %}>Highest Rated</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-filter">Apply Filters</button>
+      <a href="{% url 'services:list' %}" style="display:block; text-align:center; font-size:0.85rem; color:var(--konst-text); margin-top:1rem; text-decoration:none;">Clear Filters</a>
+    </form>
+  </aside>
+
+  <!-- Grid -->
+  <div class="services-grid">
   {% for service in services %}
   <a href="{% url 'services:detail' service.id %}" class="service-card">
     <div class="svc-top">
@@ -440,9 +562,10 @@
     </svg>
     <p style="color: var(--konst-text); font-size: 1.1rem">
       No services found.
-    </p>
   </div>
   {% endfor %}
+  </div>
+
 </div>
 
 {% endblock %}

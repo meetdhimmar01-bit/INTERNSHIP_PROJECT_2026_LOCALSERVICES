@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %}Provider Calendar – LocalServices{% endblock %}
+{% block extra_css %}
+<style>
+.cal-page { max-width: 1100px; margin: 3rem auto; padding: 0 1.5rem; }
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+.cal-header h1 { font-size: 1.8rem; font-weight: 900; color: var(--konst-dark); margin: 0; }
+.cal-grid { display: grid; grid-template-columns: 1fr 380px; gap: 2rem; }
+
+/* Calendar visual */
+.cal-visual { background: #fff; border: 1px solid var(--konst-border); padding: 1.5rem; }
+.cal-visual h2 { font-size: 1.2rem; font-weight: 800; color: var(--konst-dark); margin: 0 0 1.5rem; }
+.cal-month-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.cal-month-title { font-weight: 800; font-size: 1.1rem; color: var(--konst-dark); }
+.cal-nav-btn { background: none; border: 1px solid var(--konst-border); padding: 0.3rem 0.7rem; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+.cal-nav-btn:hover { background: var(--konst-red); color: #fff; border-color: var(--konst-red); }
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; }
+.cal-weekday { text-align: center; font-size: 0.75rem; font-weight: 700; color: #aaa; text-transform: uppercase; padding: 6px; }
+.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.15s; border-radius: 4px;
+}
+.cal-day:hover { border-color: var(--konst-red); color: var(--konst-red); }
+.cal-day.empty { cursor: default; }
+.cal-day.today { background: var(--konst-dark); color: #fff; border-radius: 4px; }
+.cal-day.has-slot { background: #ecfdf5; color: #047857; font-weight: 800; }
+.cal-day.has-slot:hover { background: var(--konst-red); color: #fff; }
+.cal-day.past { opacity: 0.3; cursor: default; pointer-events: none; }
+
+/* Add slot form */
+.cal-form { background: #fff; border: 1px solid var(--konst-border); padding: 1.5rem; }
+.cal-form h2 { font-size: 1.2rem; font-weight: 800; color: var(--konst-dark); margin: 0 0 1.5rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--konst-dark); text-transform: uppercase; margin-bottom: 0.4rem; }
+.form-group input {
+  width: 100%; padding: 0.75rem; font-size: 0.95rem;
+  border: 1px solid var(--konst-border); outline: none; font-family: inherit;
+  box-sizing: border-box; transition: border-color 0.2s;
+}
+.form-group input:focus { border-color: var(--konst-red); }
+.btn-add-slot {
+  width: 100%; padding: 0.9rem; background: var(--konst-red); color: #fff;
+  font-size: 0.95rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+  border: none; cursor: pointer; transition: background 0.2s;
+}
+.btn-add-slot:hover { background: var(--konst-red-hover); }
+
+/* Slot list */
+.slot-list { margin-top: 2rem; }
+.slot-list h2 { font-size: 1.1rem; font-weight: 800; color: var(--konst-dark); margin: 0 0 1rem; }
+.slot-card {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8rem 1rem; background: #fff; border: 1px solid var(--konst-border);
+  margin-bottom: 0.5rem;
+}
+.slot-info { font-size: 0.9rem; font-weight: 600; color: var(--konst-dark); }
+.slot-time { font-size: 0.8rem; color: var(--konst-text); }
+.btn-del-slot {
+  background: none; border: 1px solid var(--konst-red); color: var(--konst-red);
+  padding: 0.3rem 0.7rem; cursor: pointer; font-size: 0.8rem; font-weight: 700;
+  transition: all 0.2s;
+}
+.btn-del-slot:hover { background: var(--konst-red); color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cal-page">
+  <div class="cal-header">
+    <h1>📅 My Availability Calendar</h1>
+    <a href="{% url 'dashboards:owner' %}" style="color:var(--konst-text); font-size:0.9rem; font-weight:700;">← Back to Dashboard</a>
+  </div>
+
+  <div class="cal-grid">
+    <!-- Visual Calendar -->
+    <div>
+      <div class="cal-visual">
+        <div class="cal-month-header">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8592;</button>
+          <span class="cal-month-title" id="cal-month-title"></span>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">&#8594;</button>
+        </div>
+        <div class="cal-weekdays">
+          {% for d in "SMTWTFS" %}<div class="cal-weekday">{{ d }}</div>{% endfor %}
+        </div>
+        <div class="cal-days" id="cal-days"></div>
+      </div>
+
+      <!-- Slot List -->
+      <div class="slot-list">
+        <h2>Upcoming Availability Slots</h2>
+        {% if slots %}
+          {% for slot in slots %}
+          <div class="slot-card">
+            <div>
+              <div class="slot-info">📅 {{ slot.date|date:"D, d M Y" }}</div>
+              <div class="slot-time">🕐 {{ slot.start_time|time:"H:i" }} – {{ slot.end_time|time:"H:i" }}</div>
+            </div>
+            <form method="post" action="{% url 'dashboards:delete_availability' slot.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn-del-slot" onclick="return confirm('Remove this slot?')">Remove</button>
+            </form>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:#aaa; font-size:0.9rem;">No availability slots added yet. Add your first slot!</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Add Slot Form -->
+    <div class="cal-form">
+      <h2>➕ Add Availability Slot</h2>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input type="date" id="date" name="date" required min="{{ today|date:'Y-m-d' }}">
+        </div>
+        <div class="form-group">
+          <label for="start_time">Start Time</label>
+          <input type="time" id="start_time" name="start_time" required>
+        </div>
+        <div class="form-group">
+          <label for="end_time">End Time</label>
+          <input type="time" id="end_time" name="end_time" required>
+        </div>
+        <button type="submit" class="btn-add-slot">Add Slot</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const slotsData = {{ slots_json|safe }};
+const slotDates = new Set(slotsData.map(s => s.date));
+const today = new Date();
+today.setHours(0,0,0,0);
+
+let currentYear = today.getFullYear();
+let currentMonth = today.getMonth(); // 0-indexed
+
+function renderCalendar(year, month) {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-title').textContent = `${months[month]} ${year}`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const container = document.getElementById('cal-days');
+  container.innerHTML = '';
+
+  // Empty cells before 1st
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day empty';
+    container.appendChild(el);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateObj = new Date(year, month, d);
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = d;
+
+    if (dateObj < today) el.classList.add('past');
+    if (dateObj.toDateString() === today.toDateString()) el.classList.add('today');
+    if (slotDates.has(dateStr)) el.classList.add('has-slot');
+
+    el.addEventListener('click', () => {
+      if (!el.classList.contains('past')) {
+        document.getElementById('date').value = dateStr;
+      }
+    });
+    container.appendChild(el);
+  }
+}
+
+function changeMonth(delta) {
+  currentMonth += delta;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+  renderCalendar(currentYear, currentMonth);
+}
+
+renderCalendar(currentYear, currentMonth);
+</script>
+{% endblock %}

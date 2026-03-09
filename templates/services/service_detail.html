@@ -365,6 +365,22 @@
   .alert-success { background: #f0fdf4; border-color: #22c55e; color: #166534; }
   .alert-error   { background: #fef2f2; border-color: var(--konst-red); color: #991b1b; }
 
+  .wishlist-btn {
+    background: transparent;
+    border: 2px solid #555;
+    padding: 0.75rem 1.5rem;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .wishlist-saved { color: var(--konst-red); }
+  .wishlist-unsaved { color: #fff; }
+
   @media (max-width: 1024px) {
     .detail-body { grid-template-columns: 1fr; padding: 2rem; }
     .booking-card { position: static; }
@@ -412,6 +428,21 @@
       <span class="avg-rating-count">({{ reviews.count }} review{{ reviews.count|pluralize }})</span>
     </div>
     {% endif %}
+
+    <div style="margin-top:2rem; display:flex; gap:1rem;">
+      {% if user.is_authenticated and service.owner and user != service.owner %}
+        <a href="{% url 'dashboards:chat' service.owner.id %}" style="background:#fff; color:var(--konst-dark); text-decoration:none; padding:0.75rem 1.5rem; font-weight:800; text-transform:uppercase; font-size:0.85rem; border:2px solid transparent; transition:all 0.2s;">
+          💬 Chat with Provider
+        </a>
+      {% endif %}
+      
+      {% if user.is_authenticated %}
+        <button id="btn-wishlist" class="wishlist-btn {% if is_wishlisted %}wishlist-saved{% else %}wishlist-unsaved{% endif %}" onclick="toggleWishlist('{{ service.id }}')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="{% if is_wishlisted %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          <span id="wishlist-text">{% if is_wishlisted %}Saved{% else %}Save{% endif %}</span>
+        </button>
+      {% endif %}
+    </div>
   </div>
 </div>
 
@@ -494,9 +525,33 @@
           {% csrf_token %}
           <div class="form-group">
             <label for="scheduled_date">Preferred Date</label>
-            <input type="date" id="scheduled_date" name="scheduled_date" class="form-control" required
-                   min="{% now 'Y-m-d' %}" />
+            {% if availability_slots %}
+              <p style="font-size:0.8rem; color:var(--konst-text); margin:0 0 0.5rem 0;">Select from available time slots:</p>
+              <select id="scheduled_date" name="scheduled_date" class="form-control" required style="margin-bottom:0.5rem;" onchange="updateTimeSlots()">
+                <option value="">-- Choose Date --</option>
+                {% regroup availability_slots by date as slots_by_date %}
+                {% for date_group in slots_by_date %}
+                  <option value="{{ date_group.grouper|date:'Y-m-d' }}">{{ date_group.grouper|date:'D, M d Y' }}</option>
+                {% endfor %}
+              </select>
+            {% else %}
+              <input type="date" id="scheduled_date" name="scheduled_date" class="form-control" required min="{% now 'Y-m-d' %}" />
+            {% endif %}
           </div>
+          
+          <div class="form-group" id="time-group" {% if not availability_slots %}style="display:none;"{% endif %}>
+            <label for="scheduled_time">Time Slot</label>
+            <select id="scheduled_time" name="scheduled_time" class="form-control">
+              <option value="">-- Choose Time --</option>
+              {% if not availability_slots %}
+                <option value="09:00">09:00 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="14:00">02:00 PM</option>
+                <option value="16:00">04:00 PM</option>
+              {% endif %}
+            </select>
+          </div>
+
           <div class="form-group">
             <label for="address">Your Address</label>
             <textarea id="address" name="address" class="form-control" rows="3"
@@ -527,5 +582,59 @@
   </div>
 
 </div>
+
+{% block extra_js %}
+<script>
+// Wishlist AJAX
+function toggleWishlist(serviceId) {
+  fetch(`/dashboards/wishlist/toggle/${serviceId}/`, {
+    method: 'GET',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const btn = document.getElementById('btn-wishlist');
+    const txt = document.getElementById('wishlist-text');
+    const svg = btn.querySelector('svg');
+    if (data.is_wishlisted) {
+      btn.style.color = 'var(--konst-red)';
+      svg.setAttribute('fill', 'currentColor');
+      txt.textContent = 'Saved';
+    } else {
+      btn.style.color = '#fff';
+      svg.setAttribute('fill', 'none');
+      txt.textContent = 'Save';
+    }
+  }).catch(err => console.error(err));
+}
+
+// Time slots logic
+/* {% if availability_slots %} */
+const availData = {};
+/* {% regroup availability_slots by date as slots_by_date %} */
+/* {% for date_group in slots_by_date %} */
+  availData["{{ date_group.grouper|date:'Y-m-d' }}"] = [
+    /* {% for slot in date_group.list %} */
+      {"value": "{{ slot.start_time|time:'H:i' }}", "label": "{{ slot.start_time|time:'h:i A' }} – {{ slot.end_time|time:'h:i A' }}"},
+    /* {% endfor %} */
+  ];
+/* {% endfor %} */
+
+function updateTimeSlots() {
+  const dateStr = document.getElementById('scheduled_date').value;
+  const timeSelect = document.getElementById('scheduled_time');
+  timeSelect.innerHTML = '<option value="">-- Choose Time --</option>';
+  if (dateStr && availData[dateStr]) {
+    availData[dateStr].forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.value;
+      opt.textContent = s.label;
+      timeSelect.appendChild(opt);
+    });
+  }
+}
+/* {% endif %} */
+</script>
+{% endblock %}
 
 {% endblock %}

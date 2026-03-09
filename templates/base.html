@@ -157,6 +157,36 @@
         background: #eff6ff; border-left: 4px solid #3b82f6; color: #1d4ed8;
       }
 
+      /* ── NOTIFICATION BELL ──────────────────────────────── */
+      .notif-bell {
+        position: relative;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        text-decoration: none;
+        color: var(--konst-text);
+        font-size: 1.3rem;
+        transition: color 0.2s;
+      }
+      .notif-bell:hover { color: var(--konst-dark); }
+      .notif-badge {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        background: var(--konst-red);
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 800;
+        border-radius: 999px;
+        min-width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+      }
+      .notif-badge.hidden { display: none; }
+
       /* ── RESPONSIVE ─────────────────────────────────────────── */
       @media (max-width: 900px) {
         .site-navbar { padding: 0 1.5rem; }
@@ -176,7 +206,8 @@
         {% if request.path != '/' %}
           <a href="{% url 'home' %}" class="nav-text-link">Home</a>
         {% endif %}
-        <a href="{% url 'services:list' %}" class="nav-text-link">Find Services</a>
+        <a href="{% url 'services:list' %}" class="nav-text-link">Services</a>
+        <a href="{% url 'services:map' %}" class="nav-text-link">Map</a>
         {% if user.is_authenticated %}
           {% if 'dashboards' not in request.path %}
             {% if user.role == 'owner' %}
@@ -187,6 +218,11 @@
               <a href="{% url 'dashboards:user' %}" class="btn-outline-nav">Dashboard</a>
             {% endif %}
           {% endif %}
+          <!-- Notification Bell -->
+          <a href="{% url 'dashboards:notifications' %}" class="notif-bell" id="notif-bell-link" title="Notifications">
+            🔔
+            <span class="notif-badge hidden" id="notif-badge">0</span>
+          </a>
           <a href="{% url 'core:logout' %}" class="btn-nav-primary">Logout</a>
         {% else %}
           <a href="{% url 'core:signup' %}" class="btn-outline-nav">Sign Up</a>
@@ -217,5 +253,28 @@
     </footer>
 
     {% block extra_js %}{% endblock %}
+
+    {% if user.is_authenticated %}
+    <script>
+    // Poll unread notification count every 30s
+    function fetchNotifCount() {
+      fetch('/dashboards/notifications/count/')
+        .then(r => r.json())
+        .then(data => {
+          const badge = document.getElementById('notif-badge');
+          if (badge) {
+            if (data.count > 0) {
+              badge.textContent = data.count > 99 ? '99+' : data.count;
+              badge.classList.remove('hidden');
+            } else {
+              badge.classList.add('hidden');
+            }
+          }
+        }).catch(() => {});
+    }
+    fetchNotifCount();
+    setInterval(fetchNotifCount, 30000);
+    </script>
+    {% endif %}
   </body>
 </html>

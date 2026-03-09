@@ -185,6 +185,18 @@
   .btn-cancel { background: #ef4444; color: #fff; }
   .btn-cancel:hover { background: #dc2626; }
 
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .status-completed { background: #dcfce7; color: #166534; }
+  .status-confirmed { background: #dbeafe; color: #1e40af; }
+  .status-cancelled { background: #fee2e2; color: #991b1b; }
+  .status-pending { background: #fef9c3; color: #854d0e; }
+
   .quick-links-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -308,6 +320,14 @@
     </div>
   </div>
 
+  <!-- ═══ REVENUE CHART ════════════════════════════════════════ -->
+  <div class="section-heading">
+    <h2>Revenue Overview</h2>
+  </div>
+  <div style="background:#fff; border:2px solid var(--konst-border); padding:2rem; margin-bottom:3rem; max-width: 800px;">
+    <canvas id="earningsChart" height="100"></canvas>
+  </div>
+
   <!-- ═══ INCOMING BOOKINGS ════════════════════════════════════════ -->
   <div class="section-heading" style="margin-top:1rem;">
     <h2>Incoming Bookings</h2>
@@ -335,19 +355,23 @@
           <td style="padding:1rem 1.25rem;color:var(--konst-text);">{{ booking.customer.name }}</td>
           <td style="padding:1rem 1.25rem;color:var(--konst-text);">{% if booking.scheduled_date %}{{ booking.scheduled_date }}{% else %}—{% endif %}</td>
           <td style="padding:1rem 1.25rem;">
-            <span style="display:inline-block;padding:0.25rem 0.75rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;
-              background:{% if booking.status == 'Completed' %}#dcfce7{% elif booking.status == 'Confirmed' %}#dbeafe{% elif booking.status == 'Cancelled' %}#fee2e2{% else %}#fef9c3{% endif %};
-              color:{% if booking.status == 'Completed' %}#166534{% elif booking.status == 'Confirmed' %}#1e40af{% elif booking.status == 'Cancelled' %}#991b1b{% else %}#854d0e{% endif %};">
+            <span class="status-badge status-{{ booking.status|lower }}">
               {{ booking.status }}
             </span>
           </td>
           <td style="padding:1rem 1.25rem;font-weight:800;color:var(--konst-dark);">₹{{ booking.service.base_price }}</td>
           <td style="padding:1rem 1.25rem;">
             {% if booking.status == 'Pending' %}
-            <form method="POST" action="{% url 'dashboards:confirm_booking' booking.id %}">
-              {% csrf_token %}
-              <button type="submit" style="background:#dbeafe;color:#1e40af;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">✓ Confirm</button>
-            </form>
+            <div style="display:flex; gap:0.5rem;">
+              <form method="POST" action="{% url 'dashboards:confirm_booking' booking.id %}">
+                {% csrf_token %}
+                <button type="submit" style="background:#dbeafe;color:#1e40af;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">✓ Approve</button>
+              </form>
+              <form method="POST" action="{% url 'dashboards:reject_booking' booking.id %}">
+                {% csrf_token %}
+                <button type="submit" style="background:#fee2e2;color:#991b1b;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">✗ Reject</button>
+              </form>
+            </div>
             {% elif booking.status == 'Confirmed' %}
             <form method="POST" action="{% url 'dashboards:complete_booking' booking.id %}">
               {% csrf_token %}
@@ -404,4 +428,41 @@
     </a>
   </div>
 
+{% endblock %}
+
+{% block extra_js %}
+{{ chart_labels|json_script:"chartLabels" }}
+{{ chart_earnings|json_script:"chartEarnings" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('earningsChart');
+  if (ctx) {
+    const chartLabels = JSON.parse(document.getElementById('chartLabels').textContent);
+    const chartEarnings = JSON.parse(document.getElementById('chartEarnings').textContent);
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: chartLabels,
+        datasets: [{
+          label: 'Earnings (₹)',
+          data: chartEarnings,
+          backgroundColor: '#d32f2f',
+          borderColor: '#b71c1c',
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#eaeaea' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+</script>
 {% endblock %}
