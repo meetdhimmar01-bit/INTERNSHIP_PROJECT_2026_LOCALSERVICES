@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -57,7 +58,7 @@ ROOT_URLCONF = 'localservices.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -151,3 +152,9 @@ EMAIL_USE_TLS        = True
 EMAIL_HOST_USER      = 'meetdhimmar01@gmail.com'       # ← your Gmail address
 EMAIL_HOST_PASSWORD  = 'oyol bigy npdf lrww'  # ← Gmail App Password
 DEFAULT_FROM_EMAIL   = EMAIL_HOST_USER
+
+# ─── RAZORPAY CONFIG ───────────────────────────────────────────────────────────
+# Sign up at https://dashboard.razorpay.com/ → API Keys → Test Mode
+RAZORPAY_KEY_ID     = 'rzp_test_YourKeyIdHere'      # ← Replace with your Test Key ID
+RAZORPAY_KEY_SECRET = 'YourKeySecretHere'            # ← Replace with your Test Key Secret
+
