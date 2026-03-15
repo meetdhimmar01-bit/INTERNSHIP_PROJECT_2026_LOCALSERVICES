@@ -77,6 +77,13 @@ class Booking(models.Model):
     payment_order_id = models.CharField(max_length=200, blank=True)
     payment_id = models.CharField(max_length=200, blank=True)
 
+    # Extended fields (already exist in DB — added here to fix NOT NULL constraint error on booking)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    final_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    coupon_id = models.IntegerField(null=True, blank=True)
+    package_id = models.IntegerField(null=True, blank=True)
+    wallet_amount_used = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     def __str__(self):
         return f'Booking {self.id} - {self.service.name}'
 
