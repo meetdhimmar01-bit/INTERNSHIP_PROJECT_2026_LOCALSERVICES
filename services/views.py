@@ -78,6 +78,7 @@ def services_list(request):
         wishlist_ids = list(Wishlist.objects.filter(user=request.user).values_list('service_id', flat=True))
 
     return render(request, 'services/servicelist.html', {
+        'step': 'list',
         'services': services,
         'categories': categories,
         'query': query,
@@ -153,7 +154,8 @@ def service_detail(request, pk):
             messages.success(request, f'Your booking for "{service.name}" has been submitted! We will confirm it shortly.')
             return redirect('services:detail', pk=service.pk)
 
-    return render(request, 'services/service_detail.html', {
+    return render(request, 'services/servicelist.html', {
+        'step': 'detail',
         'service': service,
         'reviews': reviews,
         'avg_rating': avg_rating,
@@ -266,12 +268,14 @@ def verify_payment(request):
                 notif_type='payment',
                 link='/dashboards/owner/',
             )
-        return render(request, 'services/payment_status.html', {
+        return render(request, 'services/payment.html', {
+            'step': 'status',
             'success': True,
             'booking': booking,
         })
     else:
-        return render(request, 'services/payment_status.html', {
+        return render(request, 'services/payment.html', {
+            'step': 'status',
             'success': False,
             'booking': booking,
         })

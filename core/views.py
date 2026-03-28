@@ -224,11 +224,11 @@ def verify_otp_view(request):
         elapsed = time.time() - otp_data.get('otp_time', 0)
         if elapsed > 600:
             messages.error(request, 'OTP has expired. Please request a new one.')
-            return render(request, 'core/verify_otp.html', {'email': otp_data['email']})
+            return render(request, 'core/password.html', {'step': 'verify_otp', 'email': otp_data['email']})
 
         if entered_otp != otp_data['otp']:
             messages.error(request, 'Incorrect OTP. Please try again.')
-            return render(request, 'core/verify_otp.html', {'email': otp_data['email']})
+            return render(request, 'core/password.html', {'step': 'verify_otp', 'email': otp_data['email']})
 
         # ── Prevent IntegrityError if user refreshes after creation ──
         if User.objects.filter(email=otp_data['email']).exists():
@@ -262,7 +262,7 @@ def verify_otp_view(request):
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return redirect_by_role(user)
 
-    return render(request, 'core/verify_otp.html', {'email': otp_data['email']})
+    return render(request, 'core/password.html', {'step': 'verify_otp', 'email': otp_data['email']})
 
 
 def logout_view(request):
@@ -321,7 +321,6 @@ This OTP is valid for 10 minutes. If you did not request a password reset, ignor
             messages.success(request, f'OTP sent to {email}. Check your inbox.')
         else:
             messages.warning(request, f'Could not send email (server not configured). OTP: {otp}')
-
         return redirect('core:reset_otp')
 
     return render(request, 'core/password.html', {'step': 'forgot'})

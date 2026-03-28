@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from services.views import home_view
+from localservices.views import handler404 as custom_404, handler500 as custom_500
 
 urlpatterns = [
     path('', home_view, name='home'),
@@ -30,4 +31,7 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler404 = custom_404
+handler500 = custom_500
 
