@@ -154,7 +154,6 @@ EMAIL_HOST_PASSWORD  = 'oyol bigy npdf lrww'  # ← Gmail App Password
 DEFAULT_FROM_EMAIL   = EMAIL_HOST_USER
 
 # ─── RAZORPAY CONFIG ───────────────────────────────────────────────────────────
-# Sign up at https://dashboard.razorpay.com/ → API Keys → Test Mode
-RAZORPAY_KEY_ID     = 'rzp_test_YourKeyIdHere'      # ← Replace with your Test Key ID
-RAZORPAY_KEY_SECRET = 'YourKeySecretHere'            # ← Replace with your Test Key Secret
+RAZORPAY_KEY_ID     = 'rzp_test_SYJIKZz7SkIKJc'
+RAZORPAY_KEY_SECRET = 'mztBeTQc2PHpl00sZZRBGH3M'
 

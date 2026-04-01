@@ -200,6 +200,11 @@ def initiate_payment(request, booking_id):
     """Create a Razorpay order and show the payment page."""
     booking = get_object_or_404(Booking, id=booking_id, customer=request.user)
 
+    # Payment only allowed after service is Completed
+    if booking.status != 'Completed':
+        messages.warning(request, 'Payment is only available after the service has been completed by the provider.')
+        return redirect('dashboards:user')
+
     if booking.payment_status == 'Paid':
         messages.info(request, 'This booking is already paid.')
         return redirect('dashboards:user')
@@ -212,11 +217,12 @@ def initiate_payment(request, booking_id):
             'amount': amount_paise,
             'currency': 'INR',
             'receipt': f'booking_{booking.id}',
-            'notes': {'booking_id': booking.id},
+            'notes': {'booking_id': str(booking.id)},
         })
         booking.payment_order_id = order['id']
         booking.save()
         return render(request, 'services/payment.html', {
+            'step': 'pay',
             'booking': booking,
             'razorpay_key': settings.RAZORPAY_KEY_ID,
             'order': order,
@@ -231,43 +237,46 @@ def initiate_payment(request, booking_id):
 @login_required
 def verify_payment(request):
     """Verify Razorpay payment signature and mark booking as Paid."""
-    import razorpay
     import hmac
     import hashlib
 
     payment_id = request.POST.get('razorpay_payment_id', '')
-    order_id = request.POST.get('razorpay_order_id', '')
-    signature = request.POST.get('razorpay_signature', '')
+    order_id   = request.POST.get('razorpay_order_id', '')
+    signature  = request.POST.get('razorpay_signature', '')
 
     # Find booking by order_id
     booking = get_object_or_404(Booking, payment_order_id=order_id, customer=request.user)
 
-    # Verify signature
-    key_secret = settings.RAZORPAY_KEY_SECRET.encode('utf-8')
-    message = f'{order_id}|{payment_id}'.encode('utf-8')
+    # Verify Razorpay signature
+    key_secret   = settings.RAZORPAY_KEY_SECRET.encode('utf-8')
+    message      = f'{order_id}|{payment_id}'.encode('utf-8')
     expected_sig = hmac.new(key_secret, message, hashlib.sha256).hexdigest()
 
     if expected_sig == signature:
-        booking.payment_id = payment_id
+        booking.payment_id     = payment_id
         booking.payment_status = 'Paid'
         booking.save()
-        # Notify customer
+
+        # In-app notification – Customer
         _create_notification(
             user=request.user,
-            title='Payment Successful',
-            message=f'Payment for booking #{booking.id} ({booking.service.name}) was successful.',
+            title='💰 Payment Successful!',
+            message=f'Payment of ₹{booking.service.base_price} for booking #{booking.id} ({booking.service.name}) was successful.',
             notif_type='payment',
             link='/dashboards/user/',
         )
-        # Notify provider
+        # In-app notification – Provider
         if booking.provider:
             _create_notification(
                 user=booking.provider,
-                title='Payment Received',
-                message=f'Payment received for booking #{booking.id} from {request.user.name}.',
+                title='💰 Payment Received',
+                message=f'Payment of ₹{booking.service.base_price} received for booking #{booking.id} from {request.user.name}.',
                 notif_type='payment',
                 link='/dashboards/owner/',
             )
+        # Email to customer
+        _send_payment_success_email(booking)
+
         return render(request, 'services/payment.html', {
             'step': 'status',
             'success': True,
@@ -323,6 +332,31 @@ http://127.0.0.1:8000/dashboards/owner/
 """,
             settings.DEFAULT_FROM_EMAIL,
             [booking.provider.email],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
+
+
+def _send_payment_success_email(booking):
+    from django.core.mail import send_mail
+    try:
+        send_mail(
+            f'✅ Payment Confirmed – {booking.service.name}',
+            f"""Hi {booking.customer.name},
+
+Your payment has been received successfully!
+
+  📌 Service    : {booking.service.name}
+  💰 Amount     : ₹{booking.service.base_price}
+  📋 Booking ID : #{booking.id}
+  🆔 Payment ID : {booking.payment_id}
+
+Thank you for using LocalServices!
+— LocalServices Team
+""",
+            settings.DEFAULT_FROM_EMAIL,
+            [booking.customer.email],
             fail_silently=True,
         )
     except Exception:

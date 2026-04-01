@@ -141,3 +141,5 @@ class Notification(models.Model):
 
     def __str__(self):
         return f'[{self.notif_type}] {self.user.name}: {self.title}'
+
+    

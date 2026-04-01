@@ -25,10 +25,7 @@
     border-radius: 0;
     clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
   }
-
-  .dashboard-hero::before {
-    display: none;
-  }
+  .dashboard-hero::before { display: none; }
 
   .dashboard-hero-title {
     font-size: clamp(1.8rem, 4vw, 2.6rem);
@@ -40,7 +37,6 @@
     z-index: 1;
     text-transform: uppercase;
   }
-
   .dashboard-hero-title span {
     color: var(--konst-red);
     background: none;
@@ -48,7 +44,6 @@
     -webkit-background-clip: initial;
     background-clip: initial;
   }
-
   .dashboard-hero-subtitle {
     font-size: 1.05rem;
     color: #aaaaaa;
@@ -57,7 +52,6 @@
     margin-bottom: 2rem;
     font-weight: 500;
   }
-
   .dashboard-hero-actions {
     display: flex;
     gap: 1rem;
@@ -82,12 +76,7 @@
     transition: background 0.2s;
     box-shadow: none;
   }
-
-  .btn-primary-hero:hover {
-    background: var(--konst-red-hover);
-    transform: none;
-    box-shadow: none;
-  }
+  .btn-primary-hero:hover { background: var(--konst-red-hover); transform: none; box-shadow: none; }
 
   .btn-secondary-hero {
     display: inline-flex;
@@ -105,21 +94,15 @@
     letter-spacing: 0.05em;
     transition: all 0.2s;
   }
-
-  .btn-secondary-hero:hover {
-    border-color: var(--konst-red);
-    color: var(--konst-red);
-    transform: none;
-  }
+  .btn-secondary-hero:hover { border-color: var(--konst-red); color: var(--konst-red); transform: none; }
 
   /* ── Stats Row ──────────────────────────────────────────── */
   .stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
     margin-bottom: 3rem;
   }
-
   .stat-card {
     background: #ffffff;
     border: 2px solid var(--konst-border);
@@ -131,13 +114,7 @@
     gap: 1.25rem;
     transition: all 0.2s;
   }
-
-  .stat-card:hover {
-    border-color: var(--konst-dark);
-    transform: none;
-    box-shadow: none;
-  }
-
+  .stat-card:hover { border-color: var(--konst-dark); transform: none; box-shadow: none; }
   .stat-icon {
     width: 54px;
     height: 54px;
@@ -151,19 +128,8 @@
     color: var(--konst-dark);
     transition: all 0.2s;
   }
-
-  .stat-card:hover .stat-icon {
-    border-color: var(--konst-red);
-    color: var(--konst-red);
-  }
-
-  .stat-icon svg {
-    width: 24px;
-    height: 24px;
-    stroke: currentColor;
-    fill: none;
-  }
-
+  .stat-card:hover .stat-icon { border-color: var(--konst-red); color: var(--konst-red); }
+  .stat-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; }
   .stat-info .stat-label {
     font-size: 0.85rem;
     font-weight: 700;
@@ -172,22 +138,10 @@
     letter-spacing: 0.05em;
     margin-bottom: 0.25rem;
   }
-
-  .stat-info .stat-value {
-    font-size: 1.75rem;
-    font-weight: 900;
-    color: var(--konst-dark);
-    letter-spacing: -0.02em;
-  }
+  .stat-info .stat-value { font-size: 1.75rem; font-weight: 900; color: var(--konst-dark); letter-spacing: -0.02em; }
 
   /* ── Section Heading ────────────────────────────────────── */
-  .section-heading {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
+  .section-heading { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
   .section-heading::before {
     content: '';
     display: block;
@@ -197,7 +151,6 @@
     border-radius: 0;
     flex-shrink: 0;
   }
-
   .section-heading h2 {
     font-size: 1.4rem;
     font-weight: 900;
@@ -209,12 +162,7 @@
   }
 
   /* ── Quick Links ────────────────────────────────────────── */
-  .quick-links-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.5rem;
-  }
-
+  .quick-links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
   .quick-link-card {
     background: #ffffff;
     border: 2px solid var(--konst-border);
@@ -229,67 +177,28 @@
     position: relative;
     overflow: hidden;
   }
-
   .quick-link-card::after {
     content: '';
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 0;
-    height: 0;
+    bottom: 0; right: 0;
+    width: 0; height: 0;
     border-style: solid;
     border-width: 0 0 24px 24px;
     border-color: transparent transparent transparent transparent;
     transition: border-color 0.2s;
   }
-
-  .quick-link-card:hover {
-    border-color: var(--konst-dark);
-    transform: none;
-  }
-
-  .quick-link-card:hover::after {
-    border-color: transparent transparent var(--konst-red) transparent;
-  }
-
+  .quick-link-card:hover { border-color: var(--konst-dark); transform: none; }
+  .quick-link-card:hover::after { border-color: transparent transparent var(--konst-red) transparent; }
   .quick-link-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 0;
-    background: var(--konst-bg-alt);
-    border: 2px solid var(--konst-border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--konst-dark);
-    transition: all 0.2s;
+    width: 48px; height: 48px; border-radius: 0;
+    background: var(--konst-bg-alt); border: 2px solid var(--konst-border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--konst-dark); transition: all 0.2s;
   }
-
-  .quick-link-card:hover .quick-link-icon {
-    border-color: var(--konst-red);
-    color: var(--konst-red);
-  }
-
-  .quick-link-icon svg {
-    width: 22px;
-    height: 22px;
-    stroke: currentColor;
-    fill: none;
-  }
-
-  .quick-link-title {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: var(--konst-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-
-  .quick-link-desc {
-    font-size: 0.9rem;
-    color: var(--konst-text);
-    font-weight: 500;
-  }
+  .quick-link-card:hover .quick-link-icon { border-color: var(--konst-red); color: var(--konst-red); }
+  .quick-link-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; }
+  .quick-link-title { font-size: 1.05rem; font-weight: 800; color: var(--konst-dark); text-transform: uppercase; letter-spacing: 0.02em; }
+  .quick-link-desc { font-size: 0.9rem; color: var(--konst-text); font-weight: 500; }
 
   /* ── Status Badges ──────────────────────────────────────── */
   .status-badge {
@@ -302,7 +211,57 @@
   .status-completed { background: #dcfce7; color: #166534; }
   .status-confirmed { background: #dbeafe; color: #1e40af; }
   .status-cancelled { background: #fee2e2; color: #991b1b; }
-  .status-pending { background: #fef9c3; color: #854d0e; }
+  .status-pending   { background: #fef9c3; color: #854d0e; }
+  .status-rejected  { background: #f3e8ff; color: #6b21a8; }
+
+  /* ── Pay Now Button ─────────────────────────────────────── */
+  .btn-pay-now {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1.1rem;
+    background: var(--konst-red);
+    color: #fff !important;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    letter-spacing: 0.06em;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    animation: pulse-pay 2s infinite;
+    white-space: nowrap;
+  }
+  .btn-pay-now:hover {
+    background: var(--konst-red-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(211,47,47,0.45);
+    text-decoration: none !important;
+  }
+  @keyframes pulse-pay {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(211,47,47,0.4); }
+    50%       { box-shadow: 0 0 0 7px rgba(211,47,47,0); }
+  }
+  .badge-paid {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Table Row Styles ───────────────────────────────────── */
+  .booking-row {
+    border-bottom: 1px solid var(--konst-border);
+    transition: background 0.15s;
+  }
+  .booking-row:hover { background: #fafafa; }
+  .booking-row.row-unpaid { background: #fff8f8; }
+  .booking-row.row-unpaid:hover { background: #fff0f0; }
 
   @media (max-width: 640px) {
     .dashboard-hero { padding: 2.5rem 1.5rem; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); }
@@ -358,6 +317,16 @@
         <div class="stat-value">{{ completed_bookings }}</div>
       </div>
     </div>
+    <!-- Awaiting Payment card – highlighted in red -->
+    <div class="stat-card" style="border-left: 4px solid var(--konst-red);">
+      <div class="stat-icon" style="border-color: var(--konst-red); color: var(--konst-red);">
+        <svg viewBox="0 0 24 24" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label" style="color: var(--konst-red);">Awaiting Payment</div>
+        <div class="stat-value" style="color: var(--konst-red);">{{ unpaid_completed }}</div>
+      </div>
+    </div>
   </div>
 
   <!-- ═══ RECENT BOOKINGS ══════════════════════════════════════ -->
@@ -381,32 +350,58 @@
       </thead>
       <tbody>
         {% for booking in recent_bookings %}
-        <tr style="border-bottom:1px solid var(--konst-border);">
+        <tr class="booking-row{% if booking.status == 'Completed' and booking.payment_status != 'Paid' %} row-unpaid{% endif %}">
           <td style="padding:1rem 1.25rem;color:var(--konst-text);">#{{ booking.id }}</td>
           <td style="padding:1rem 1.25rem;font-weight:700;color:var(--konst-dark);">{{ booking.service.name }}</td>
           <td style="padding:1rem 1.25rem;color:var(--konst-text);">{% if booking.scheduled_date %}{{ booking.scheduled_date }}{% else %}—{% endif %}</td>
           <td style="padding:1rem 1.25rem;">
-            <span class="status-badge {% if booking.status == 'Completed' %}status-completed{% elif booking.status == 'Confirmed' %}status-confirmed{% elif booking.status == 'Cancelled' %}status-cancelled{% else %}status-pending{% endif %}">
+            <span class="status-badge
+              {% if booking.status == 'Completed' %}status-completed
+              {% elif booking.status == 'Confirmed' %}status-confirmed
+              {% elif booking.status == 'Cancelled' %}status-cancelled
+              {% elif booking.status == 'Rejected' %}status-rejected
+              {% else %}status-pending{% endif %}">
               {{ booking.status }}
             </span>
           </td>
-          <td style="padding:1rem 1.25rem;color:var(--konst-text);">{{ booking.payment_status }}</td>
-          <td style="padding:1rem 1.25rem;font-weight:800;color:var(--konst-dark);">₹{{ booking.service.base_price }}</td>
           <td style="padding:1rem 1.25rem;">
-            {% if booking.status == 'Pending' %}
-            <form method="POST" action="{% url 'dashboards:cancel_booking' booking.id %}" onsubmit="return confirm('Cancel this booking?')">
-              {% csrf_token %}
-              <button type="submit" style="background:#fee2e2;color:#991b1b;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">✕ Cancel</button>
-            </form>
-            {% elif booking.status == 'Completed' %}
-              {% if booking.review %}
-              <span style="color:#166534;font-size:0.82rem;font-weight:700;">✓ Reviewed</span>
-              {% else %}
-              <a href="{% url 'dashboards:leave_review' booking.id %}" style="display:inline-block;background:#fef9c3;color:#854d0e;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;text-decoration:none;letter-spacing:0.04em;">★ Review</a>
-              {% endif %}
+            {% if booking.payment_status == 'Paid' %}
+              <span style="color:#166534;font-weight:700;font-size:0.85rem;">&#x2714; Paid</span>
             {% else %}
-            <span style="color:#ccc;font-size:0.82rem;">—</span>
+              <span style="color:#854d0e;font-size:0.85rem;font-weight:600;">{{ booking.payment_status }}</span>
             {% endif %}
+          </td>
+          <td style="padding:1rem 1.25rem;font-weight:800;color:var(--konst-dark);">&#x20B9;{{ booking.service.base_price }}</td>
+          <td style="padding:1rem 1.25rem;">
+
+            {% if booking.status == 'Pending' %}
+              {# --- Pending: Show Cancel button --- #}
+              <form method="POST" action="{% url 'dashboards:cancel_booking' booking.id %}" onsubmit="return confirm('Cancel this booking?')">
+                {% csrf_token %}
+                <button type="submit" style="background:#fee2e2;color:#991b1b;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">&#x2715; Cancel</button>
+              </form>
+
+            {% elif booking.status == 'Completed' and booking.payment_status != 'Paid' %}
+              {# --- Completed & Unpaid: Show PAY NOW button --- #}
+              <a href="{% url 'services:initiate_payment' booking.id %}" class="btn-pay-now">
+                &#x1F4B3; Pay Now
+              </a>
+
+            {% elif booking.status == 'Completed' and booking.payment_status == 'Paid' %}
+              {# --- Completed & Paid: Show green badge + Review --- #}
+              <div style="display:flex;flex-direction:column;gap:0.4rem;align-items:flex-start;">
+                <span class="badge-paid">&#x2713; Paid</span>
+                {% if booking.review %}
+                  <span style="color:#166534;font-size:0.8rem;font-weight:700;">&#x2713; Reviewed</span>
+                {% else %}
+                  <a href="{% url 'dashboards:leave_review' booking.id %}" style="display:inline-block;background:#fef9c3;color:#854d0e;padding:0.35rem 0.75rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;text-decoration:none;letter-spacing:0.04em;">&#x2605; Review</a>
+                {% endif %}
+              </div>
+
+            {% else %}
+              <span style="color:#ccc;font-size:0.82rem;">&#x2014;</span>
+            {% endif %}
+
           </td>
         </tr>
         {% endfor %}
