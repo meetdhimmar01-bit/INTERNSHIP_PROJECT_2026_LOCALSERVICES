@@ -281,7 +281,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         Browse Services
       </a>
-      <a href="{% url 'services:list' %}" class="btn-secondary-hero">
+      <a href="#my-bookings" class="btn-secondary-hero" onclick="event.preventDefault();document.getElementById('my-bookings').scrollIntoView({behavior:'smooth'});">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         My Bookings
       </a>
@@ -329,92 +329,174 @@
     </div>
   </div>
 
-  <!-- ═══ RECENT BOOKINGS ══════════════════════════════════════ -->
-  <div class="section-heading" style="margin-top:2.5rem;">
-    <h2>Recent Bookings</h2>
-  </div>
+  <!-- ═══ MY BOOKINGS (Tabbed) ═══════════════════════════════ -->
+  <div id="my-bookings" style="margin-top:2.5rem;margin-bottom:3rem;background:#fff;border:2px solid var(--konst-border);">
 
-  {% if recent_bookings %}
-  <div style="background:#fff;border:2px solid var(--konst-border);overflow-x:auto;margin-bottom:3rem;">
-    <table style="width:100%;border-collapse:collapse;font-size:0.92rem;">
-      <thead>
-        <tr style="background:var(--konst-dark);color:#fff;text-align:left;">
-          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">#</th>
-          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Service</th>
-          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Date</th>
-          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Status</th>
-          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Payment</th>
-          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Price</th>
-          <th style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for booking in recent_bookings %}
-        <tr class="booking-row{% if booking.status == 'Completed' and booking.payment_status != 'Paid' %} row-unpaid{% endif %}">
-          <td style="padding:1rem 1.25rem;color:var(--konst-text);">#{{ booking.id }}</td>
-          <td style="padding:1rem 1.25rem;font-weight:700;color:var(--konst-dark);">{{ booking.service.name }}</td>
-          <td style="padding:1rem 1.25rem;color:var(--konst-text);">{% if booking.scheduled_date %}{{ booking.scheduled_date }}{% else %}—{% endif %}</td>
-          <td style="padding:1rem 1.25rem;">
-            <span class="status-badge
-              {% if booking.status == 'Completed' %}status-completed
-              {% elif booking.status == 'Confirmed' %}status-confirmed
-              {% elif booking.status == 'Cancelled' %}status-cancelled
-              {% elif booking.status == 'Rejected' %}status-rejected
-              {% else %}status-pending{% endif %}">
-              {{ booking.status }}
-            </span>
-          </td>
-          <td style="padding:1rem 1.25rem;">
-            {% if booking.payment_status == 'Paid' %}
-              <span style="color:#166534;font-weight:700;font-size:0.85rem;">&#x2714; Paid</span>
-            {% else %}
-              <span style="color:#854d0e;font-size:0.85rem;font-weight:600;">{{ booking.payment_status }}</span>
-            {% endif %}
-          </td>
-          <td style="padding:1rem 1.25rem;font-weight:800;color:var(--konst-dark);">&#x20B9;{{ booking.service.base_price }}</td>
-          <td style="padding:1rem 1.25rem;">
+    <!-- Tab Header -->
+    <div style="display:flex;align-items:stretch;border-bottom:2px solid var(--konst-border);">
+      <div style="display:flex;align-items:center;gap:0.6rem;padding:1rem 1.5rem;border-right:2px solid var(--konst-border);background:var(--konst-dark);flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span style="color:#fff;font-weight:900;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">My Bookings</span>
+      </div>
+      <button id="tab-current-btn" onclick="switchTab('current')"
+        style="display:flex;align-items:center;gap:0.5rem;padding:1rem 1.5rem;background:transparent;border:none;border-bottom:3px solid var(--konst-red);margin-bottom:-2px;cursor:pointer;font-size:0.85rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--konst-red);transition:all 0.2s;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Recent
+        <span id="count-current" style="background:var(--konst-red);color:#fff;font-size:0.72rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:2px;min-width:18px;text-align:center;">{{ current_bookings.count }}</span>
+      </button>
+      <button id="tab-past-btn" onclick="switchTab('past')"
+        style="display:flex;align-items:center;gap:0.5rem;padding:1rem 1.5rem;background:transparent;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;font-size:0.85rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--konst-text);transition:all 0.2s;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/><path d="M12 6v6l-3 3"/></svg>
+        Past
+        <span id="count-past" style="background:var(--konst-border);color:var(--konst-text);font-size:0.72rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:2px;min-width:18px;text-align:center;">{{ past_bookings.count }}</span>
+      </button>
+    </div>
 
-            {% if booking.status == 'Pending' %}
-              {# --- Pending: Show Cancel button --- #}
-              <form method="POST" action="{% url 'dashboards:cancel_booking' booking.id %}" onsubmit="return confirm('Cancel this booking?')">
-                {% csrf_token %}
-                <button type="submit" style="background:#fee2e2;color:#991b1b;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">&#x2715; Cancel</button>
-              </form>
-
-            {% elif booking.status == 'Completed' and booking.payment_status != 'Paid' %}
-              {# --- Completed & Unpaid: Show PAY NOW button --- #}
-              <a href="{% url 'services:initiate_payment' booking.id %}" class="btn-pay-now">
-                &#x1F4B3; Pay Now
-              </a>
-
-            {% elif booking.status == 'Completed' and booking.payment_status == 'Paid' %}
-              {# --- Completed & Paid: Show green badge + Review --- #}
-              <div style="display:flex;flex-direction:column;gap:0.4rem;align-items:flex-start;">
-                <span class="badge-paid">&#x2713; Paid</span>
-                {% if booking.review %}
-                  <span style="color:#166534;font-size:0.8rem;font-weight:700;">&#x2713; Reviewed</span>
+    <!-- ── Current / Recent Tab ─────────────────────────────────── -->
+    <div id="panel-current">
+      {% if current_bookings %}
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.92rem;">
+          <thead>
+            <tr style="background:var(--konst-bg-alt);text-align:left;border-bottom:2px solid var(--konst-border);">
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">#</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Service</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Scheduled Date</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Status</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Price</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in current_bookings %}
+            <tr class="booking-row">
+              <td style="padding:1rem 1.25rem;color:var(--konst-text);">#{{ booking.id }}</td>
+              <td style="padding:1rem 1.25rem;font-weight:700;color:var(--konst-dark);">{{ booking.service.name }}</td>
+              <td style="padding:1rem 1.25rem;color:var(--konst-text);">{% if booking.scheduled_date %}{{ booking.scheduled_date }}{% else %}—{% endif %}</td>
+              <td style="padding:1rem 1.25rem;">
+                <span class="status-badge {% if booking.status == 'Confirmed' %}status-confirmed{% else %}status-pending{% endif %}">{{ booking.status }}</span>
+              </td>
+              <td style="padding:1rem 1.25rem;font-weight:800;color:var(--konst-dark);">&#x20B9;{{ booking.service.base_price }}</td>
+              <td style="padding:1rem 1.25rem;">
+                {% if booking.status == 'Pending' %}
+                  <form method="POST" action="{% url 'dashboards:cancel_booking' booking.id %}" onsubmit="return confirm('Cancel this booking?')">
+                    {% csrf_token %}
+                    <button type="submit" style="background:#fee2e2;color:#991b1b;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">&#x2715; Cancel</button>
+                  </form>
                 {% else %}
-                  <a href="{% url 'dashboards:leave_review' booking.id %}" style="display:inline-block;background:#fef9c3;color:#854d0e;padding:0.35rem 0.75rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;text-decoration:none;letter-spacing:0.04em;">&#x2605; Review</a>
+                  <span style="color:#1e40af;font-size:0.82rem;font-weight:700;">In Progress</span>
                 {% endif %}
-              </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:3rem 2rem;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.5" style="margin-bottom:1rem;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <p style="color:var(--konst-text);margin-bottom:1.5rem;font-weight:600;">No active bookings right now.</p>
+        <a href="{% url 'services:list' %}" class="btn-primary-hero">Browse Services</a>
+      </div>
+      {% endif %}
+    </div>
 
-            {% else %}
-              <span style="color:#ccc;font-size:0.82rem;">&#x2014;</span>
-            {% endif %}
+    <!-- ── Past Tab ──────────────────────────────────────────────── -->
+    <div id="panel-past" style="display:none;">
+      {% if past_bookings %}
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.92rem;">
+          <thead>
+            <tr style="background:var(--konst-bg-alt);text-align:left;border-bottom:2px solid var(--konst-border);">
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">#</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Service</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Date</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Status</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Payment</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Price</th>
+              <th style="padding:0.85rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:0.78rem;color:var(--konst-text);">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in past_bookings %}
+            <tr class="booking-row{% if booking.status == 'Completed' and booking.payment_status != 'Paid' %} row-unpaid{% endif %}">
+              <td style="padding:1rem 1.25rem;color:var(--konst-text);">#{{ booking.id }}</td>
+              <td style="padding:1rem 1.25rem;font-weight:700;color:var(--konst-dark);">{{ booking.service.name }}</td>
+              <td style="padding:1rem 1.25rem;color:var(--konst-text);">{% if booking.scheduled_date %}{{ booking.scheduled_date }}{% else %}—{% endif %}</td>
+              <td style="padding:1rem 1.25rem;">
+                <span class="status-badge {% if booking.status == 'Completed' %}status-completed{% elif booking.status == 'Cancelled' %}status-cancelled{% elif booking.status == 'Rejected' %}status-rejected{% else %}status-pending{% endif %}">{{ booking.status }}</span>
+              </td>
+              <td style="padding:1rem 1.25rem;">
+                {% if booking.status == 'Completed' %}
+                  {% if booking.payment_status == 'Paid' %}
+                    <span style="color:#166534;font-weight:700;font-size:0.85rem;">&#x2714; Paid</span>
+                  {% else %}
+                    <span style="color:#991b1b;font-weight:700;font-size:0.85rem;">Unpaid</span>
+                  {% endif %}
+                {% else %}
+                  <span style="color:#aaa;font-size:0.82rem;">—</span>
+                {% endif %}
+              </td>
+              <td style="padding:1rem 1.25rem;font-weight:800;color:var(--konst-dark);">&#x20B9;{{ booking.service.base_price }}</td>
+              <td style="padding:1rem 1.25rem;">
+                {% if booking.status == 'Completed' and booking.payment_status != 'Paid' %}
+                  <a href="{% url 'services:initiate_payment' booking.id %}" class="btn-pay-now">&#x1F4B3; Pay Now</a>
+                {% elif booking.status == 'Completed' and booking.payment_status == 'Paid' %}
+                  <div style="display:flex;flex-direction:column;gap:0.4rem;align-items:flex-start;">
+                    <span class="badge-paid">&#x2713; Paid</span>
+                    {% if booking.review %}
+                      <span style="color:#166534;font-size:0.8rem;font-weight:700;">&#x2713; Reviewed</span>
+                    {% else %}
+                      <a href="{% url 'dashboards:leave_review' booking.id %}" style="display:inline-block;background:#fef9c3;color:#854d0e;padding:0.35rem 0.75rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;text-decoration:none;letter-spacing:0.04em;">&#x2605; Review</a>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <span style="color:#ccc;font-size:0.82rem;">&#x2014;</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:3rem 2rem;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.5" style="margin-bottom:1rem;"><polyline points="20 6 9 17 4 12"/></svg>
+        <p style="color:var(--konst-text);font-weight:600;">No past bookings yet.</p>
+      </div>
+      {% endif %}
+    </div>
 
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-  <div style="text-align:center;padding:3rem;border:2px dashed var(--konst-border);margin-bottom:3rem;">
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="margin-bottom:1rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-    <p style="color:var(--konst-text);margin-bottom:1.5rem;">You haven't made any bookings yet.</p>
-    <a href="{% url 'services:list' %}" class="btn-primary-hero">Browse Services</a>
-  </div>
-  {% endif %}
+  </div><!-- end #my-bookings -->
+
+  <!-- Hidden flags for JS auto-tab logic -->
+  <span id="booking-flags"
+    data-has-current="{% if current_bookings %}1{% else %}0{% endif %}"
+    data-has-past="{% if past_bookings %}1{% else %}0{% endif %}"
+    style="display:none;"></span>
+
+  <script>
+    function switchTab(tab) {
+      var isPast = (tab === 'past');
+      document.getElementById('panel-current').style.display = isPast ? 'none' : 'block';
+      document.getElementById('panel-past').style.display    = isPast ? 'block' : 'none';
+      var cBtn = document.getElementById('tab-current-btn');
+      cBtn.style.color        = isPast ? 'var(--konst-text)' : 'var(--konst-red)';
+      cBtn.style.borderBottom = isPast ? '3px solid transparent' : '3px solid var(--konst-red)';
+      document.getElementById('count-current').style.background = isPast ? 'var(--konst-border)' : 'var(--konst-red)';
+      document.getElementById('count-current').style.color      = isPast ? 'var(--konst-text)' : '#fff';
+      var pBtn = document.getElementById('tab-past-btn');
+      pBtn.style.color        = isPast ? 'var(--konst-red)' : 'var(--konst-text)';
+      pBtn.style.borderBottom = isPast ? '3px solid var(--konst-red)' : '3px solid transparent';
+      document.getElementById('count-past').style.background = isPast ? 'var(--konst-red)' : 'var(--konst-border)';
+      document.getElementById('count-past').style.color      = isPast ? '#fff' : 'var(--konst-text)';
+    }
+    // Auto-show Past tab if no current bookings
+    document.addEventListener('DOMContentLoaded', function () {
+      var f = document.getElementById('booking-flags');
+      if (f.dataset.hasCurrent !== '1' && f.dataset.hasPast === '1') switchTab('past');
+    });
+  </script>
 
   <!-- ═══ QUICK LINKS ════════════════════════════════════════ -->
   <div class="section-heading">

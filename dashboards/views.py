@@ -88,12 +88,19 @@ def user_dashboard(request):
     bookings = Booking.objects.filter(customer=request.user).select_related('service', 'review').order_by('-booking_date')
     wishlist_items = Wishlist.objects.filter(user=request.user).select_related('service__category')
     unread_notifs = Notification.objects.filter(user=request.user, is_read=False).count()
+
+    # Active / in-progress bookings
+    current_bookings = bookings.filter(status__in=['Pending', 'Confirmed'])
+    # Historical bookings
+    past_bookings    = bookings.filter(status__in=['Completed', 'Cancelled', 'Rejected'])
+
     context = {
         'total_bookings':     bookings.count(),
         'pending_bookings':   bookings.filter(status='Pending').count(),
         'completed_bookings': bookings.filter(status='Completed').count(),
         'unpaid_completed':   bookings.filter(status='Completed', payment_status='Unpaid').count(),
-        'recent_bookings':    bookings[:10],
+        'current_bookings':   current_bookings,
+        'past_bookings':      past_bookings,
         'wishlist_items':     wishlist_items,
         'unread_notifs':      unread_notifs,
     }
