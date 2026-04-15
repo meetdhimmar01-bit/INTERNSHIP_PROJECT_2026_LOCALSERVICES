@@ -154,6 +154,6 @@ EMAIL_HOST_PASSWORD  = 'oyol bigy npdf lrww'  # ← Gmail App Password
 DEFAULT_FROM_EMAIL   = EMAIL_HOST_USER
 
 # ─── RAZORPAY CONFIG ───────────────────────────────────────────────────────────
-RAZORPAY_KEY_ID     = 'rzp_test_SYJIKZz7SkIKJc'
-RAZORPAY_KEY_SECRET = 'mztBeTQc2PHpl00sZZRBGH3M'
+RAZORPAY_KEY_ID     = 'rzp_test_SdtzlF4PnKG6sW'
+RAZORPAY_KEY_SECRET = 'NTOKXN8jrG1gCFeakbs9MkWV'
 

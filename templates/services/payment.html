@@ -108,6 +108,25 @@ var options = {
     "key": "{{ razorpay_key }}",
     "amount": "{{ amount_paise }}",
     "currency": "INR",
+    "config": {
+        "display": {
+            "blocks": {
+                "upi_block": {
+                    "name": "Pay by UPI ID",
+                    "instruments": [
+                        {
+                            "method": "upi",
+                            "flows": ["collect"]
+                        }
+                    ]
+                }
+            },
+            "sequence": ["block.upi_block"],
+            "preferences": {
+                "show_default_blocks": true
+            }
+        }
+    },
     "name": "LocalServices",
     "description": "Payment for {{ booking.service.name }}",
     "image": "https://dummyimage.com/150x150/d32f2f/fff.png&text=LS",
@@ -121,7 +140,8 @@ var options = {
     "prefill": {
         "name": "{{ request.user.name }}",
         "email": "{{ request.user.email }}",
-        "contact": ""
+        "contact": "9999999999",
+        "method": "upi"
     },
     "theme": {
         "color": "#d32f2f"
