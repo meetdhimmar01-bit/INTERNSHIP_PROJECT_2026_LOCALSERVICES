@@ -10,4 +10,5 @@ urlpatterns = [
     path('map/', views.map_view, name='map'),
     path('payment/<int:booking_id>/', views.initiate_payment, name='initiate_payment'),
     path('payment/verify/', views.verify_payment, name='verify_payment'),
+    path('payment/simulate/<int:booking_id>/', views.simulate_payment, name='simulate_payment'),
 ]

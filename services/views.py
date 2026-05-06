@@ -237,8 +237,7 @@ def initiate_payment(request, booking_id):
 @login_required
 def verify_payment(request):
     """Verify Razorpay payment signature and mark booking as Paid."""
-    import hmac
-    import hashlib
+    import razorpay
 
     payment_id = request.POST.get('razorpay_payment_id', '')
     order_id   = request.POST.get('razorpay_order_id', '')
@@ -247,12 +246,17 @@ def verify_payment(request):
     # Find booking by order_id
     booking = get_object_or_404(Booking, payment_order_id=order_id, customer=request.user)
 
-    # Verify Razorpay signature
-    key_secret   = settings.RAZORPAY_KEY_SECRET.encode('utf-8')
-    message      = f'{order_id}|{payment_id}'.encode('utf-8')
-    expected_sig = hmac.new(key_secret, message, hashlib.sha256).hexdigest()
+    # Verify using Razorpay's official client (more reliable than manual HMAC)
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    params = {
+        'razorpay_payment_id': payment_id,
+        'razorpay_order_id':   order_id,
+        'razorpay_signature':  signature,
+    }
 
-    if expected_sig == signature:
+    try:
+        client.utility.verify_payment_signature(params)
+        # ── Signature valid ──
         booking.payment_id     = payment_id
         booking.payment_status = 'Paid'
         booking.save()
@@ -282,12 +286,58 @@ def verify_payment(request):
             'success': True,
             'booking': booking,
         })
-    else:
+
+    except razorpay.errors.SignatureVerificationError:
+        # ── Signature invalid ──
         return render(request, 'services/payment.html', {
             'step': 'status',
             'success': False,
             'booking': booking,
         })
+
+
+@login_required
+def simulate_payment(request, booking_id):
+    """Demo-only: directly mark booking as Paid (bypasses Razorpay for test/demo)."""
+    booking = get_object_or_404(Booking, id=booking_id, customer=request.user)
+
+    if booking.status != 'Completed':
+        messages.warning(request, 'Payment is only available after the service has been completed.')
+        return redirect('dashboards:user')
+
+    if booking.payment_status == 'Paid':
+        messages.info(request, 'This booking is already paid.')
+        return redirect('dashboards:user')
+
+    # Mark as paid with a demo payment ID
+    import uuid
+    booking.payment_id = f'demo_{uuid.uuid4().hex[:16]}'
+    booking.payment_status = 'Paid'
+    booking.save()
+
+    # Notification – Customer
+    _create_notification(
+        user=request.user,
+        title='Payment Successful!',
+        message=f'Payment of Rs.{booking.service.base_price} for booking #{booking.id} ({booking.service.name}) was successful.',
+        notif_type='payment',
+        link='/dashboards/user/',
+    )
+    # Notification – Provider
+    if booking.provider:
+        _create_notification(
+            user=booking.provider,
+            title='Payment Received',
+            message=f'Payment of Rs.{booking.service.base_price} received for booking #{booking.id} from {request.user.name}.',
+            notif_type='payment',
+            link='/dashboards/owner/',
+        )
+
+    return render(request, 'services/payment.html', {
+        'step': 'status',
+        'success': True,
+        'booking': booking,
+    })
 
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -15,9 +15,28 @@
 .pay-details { background: var(--konst-bg-alt); padding: 1.5rem; text-align: left; margin: 2rem 0; font-size: 0.95rem; color: var(--konst-text); }
 .pay-details p { margin: 0 0 0.5rem; display: flex; justify-content: space-between; }
 .pay-details p strong { color: var(--konst-dark); font-weight: 700; }
-.btn-pay { width: 100%; padding: 1rem; background: var(--konst-red); color: #fff; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border: none; cursor: pointer; transition: all 0.2s; display: block; text-decoration: none; }
+
+/* ── UPI Input ── */
+.upi-input-wrap { margin: 1.5rem 0; text-align: left; }
+.upi-input-wrap label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--konst-dark); margin-bottom: 0.5rem; }
+.upi-input-wrap input {
+    width: 100%; padding: 0.85rem 1rem;
+    border: 2px solid var(--konst-border);
+    font-size: 1rem; color: var(--konst-dark);
+    outline: none; transition: border-color 0.2s; box-sizing: border-box;
+}
+.upi-input-wrap input:focus { border-color: var(--konst-red); }
+.upi-hint { font-size: 0.78rem; color: #888; margin-top: 0.4rem; }
+.upi-error { font-size: 0.82rem; color: var(--konst-red); margin-top: 0.4rem; display: none; }
+
+.btn-pay { width: 100%; padding: 1rem; background: var(--konst-red); color: #fff; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border: none; cursor: pointer; transition: all 0.2s; display: block; text-decoration: none; margin-top: 1rem; }
 .btn-pay:hover { background: var(--konst-red-hover); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(211,47,47,0.3); }
 .secure-badge { margin-top: 1.5rem; font-size: 0.8rem; color: #888; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+
+/* ── UPI apps row ── */
+.upi-apps { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin: 1rem 0 0; align-items: center; }
+.upi-apps span { font-size: 0.78rem; color: #888; }
+.upi-app-logo { font-size: 1.4rem; }
 
 /* ── Step: status ── */
 .status-box { background: #fff; border: 1px solid var(--konst-border); padding: 3rem 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
@@ -43,7 +62,7 @@
   {% if step == 'pay' or not step %}
   <div class="pay-box">
     <h1>Complete Your Payment</h1>
-    <p>Secure payment for your service booking.</p>
+    <p>Pay securely using UPI.</p>
 
     <div class="pay-amount">₹{{ booking.service.base_price }}</div>
 
@@ -54,7 +73,15 @@
       <p><span>Booking ID:</span> <strong>#{{ booking.id }}</strong></p>
     </div>
 
-    <form action="{% url 'services:verify_payment' %}" method="POST">
+    {# ── UPI ID Input Box ── #}
+    <div class="upi-input-wrap">
+      <label for="upi-id-input">🏦 Enter Your UPI ID</label>
+      <input type="text" id="upi-id-input" placeholder="e.g. meetdhimmar01@okaxis" autocomplete="off">
+      <div class="upi-hint">GPay, PhonePe, Paytm, BHIM – any UPI ID works</div>
+      <div class="upi-error" id="upi-error">⚠️ Please enter a valid UPI ID (e.g. name@okaxis)</div>
+    </div>
+
+    <form action="{% url 'services:verify_payment' %}" method="POST" id="payment-form">
       {% csrf_token %}
       <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
       <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
@@ -62,6 +89,25 @@
     </form>
 
     <button id="rzp-button1" class="btn-pay">Pay securely with Razorpay ➤</button>
+
+    {# ── DEMO Button (for test/internship demo) ── #}
+    <div style="margin-top:1rem; text-align:center;">
+      <p style="font-size:0.78rem; color:#aaa; margin-bottom:0.5rem;">— OR for Demo / Testing —</p>
+      <a href="{% url 'services:simulate_payment' booking.id %}"
+         class="btn-pay"
+         style="background:#1a73e8; display:inline-block; width:100%; box-sizing:border-box;"
+         onclick="return confirm('Simulate a successful payment for demo purposes?');">
+         🧪 Demo Pay (Skip Razorpay)
+      </a>
+    </div>
+
+    <div class="upi-apps">
+      <span>Accepted:</span>
+      <span class="upi-app-logo" title="Google Pay">🇬</span>
+      <span class="upi-app-logo" title="PhonePe">📱</span>
+      <span class="upi-app-logo" title="Paytm">💳</span>
+      <span class="upi-app-logo" title="BHIM">🏦</span>
+    </div>
 
     <div class="secure-badge">
       🔒 <span>100% Secure Payments by Razorpay</span>
@@ -104,54 +150,49 @@
 {% if step == 'pay' or not step %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-var options = {
-    "key": "{{ razorpay_key }}",
-    "amount": "{{ amount_paise }}",
-    "currency": "INR",
-    "config": {
-        "display": {
-            "blocks": {
-                "upi_block": {
-                    "name": "Pay by UPI ID",
-                    "instruments": [
-                        {
-                            "method": "upi",
-                            "flows": ["collect"]
-                        }
-                    ]
-                }
-            },
-            "sequence": ["block.upi_block"],
-            "preferences": {
-                "show_default_blocks": true
-            }
-        }
-    },
-    "name": "LocalServices",
-    "description": "Payment for {{ booking.service.name }}",
-    "image": "https://dummyimage.com/150x150/d32f2f/fff.png&text=LS",
-    "order_id": "{{ order.id }}",
-    "handler": function (response){
-        document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
-        document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
-        document.getElementById('razorpay_signature').value = response.razorpay_signature;
-        document.forms[0].submit();
-    },
-    "prefill": {
-        "name": "{{ request.user.name }}",
-        "email": "{{ request.user.email }}",
-        "contact": "9999999999",
-        "method": "upi"
-    },
-    "theme": {
-        "color": "#d32f2f"
-    }
-};
-var rzp1 = new Razorpay(options);
-document.getElementById('rzp-button1').onclick = function(e){
-    rzp1.open();
+document.getElementById('rzp-button1').onclick = function(e) {
     e.preventDefault();
-}
+
+    var upiId = document.getElementById('upi-id-input').value.trim();
+    var upiError = document.getElementById('upi-error');
+
+    // Validate UPI ID format (must contain @)
+    if (!upiId || !upiId.includes('@')) {
+        upiError.style.display = 'block';
+        document.getElementById('upi-id-input').focus();
+        return;
+    }
+    upiError.style.display = 'none';
+
+    var options = {
+        "key": "{{ razorpay_key }}",
+        "amount": "{{ amount_paise }}",
+        "currency": "INR",
+        "name": "LocalServices",
+        "description": "Payment for {{ booking.service.name }}",
+        "image": "https://dummyimage.com/150x150/d32f2f/fff.png&text=LS",
+        "order_id": "{{ order.id }}",
+        "handler": function (response) {
+            document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+            document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+            document.getElementById('razorpay_signature').value = response.razorpay_signature;
+            document.getElementById('payment-form').submit();
+        },
+        "prefill": {
+            "name": "{{ request.user.name }}",
+            "email": "{{ request.user.email }}",
+            "contact": "9999999999",
+            "method": "upi",
+            "vpa": upiId
+        },
+        "theme": {
+            "color": "#d32f2f"
+        }
+    };
+
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+};
 </script>
 {% endif %}
 {% endblock %}
