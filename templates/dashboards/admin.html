@@ -304,9 +304,41 @@
   .status-cancelled { background: #fee2e2; color: #991b1b; }
   .status-pending   { background: #fef9c3; color: #854d0e; }
 
+  .provider-review-list { display: grid; gap: 0.85rem; margin-bottom: 2rem; }
+  .provider-review-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    flex-wrap: wrap; padding: 1.25rem 1.5rem; background: #fff;
+    border: 1px solid var(--konst-border); border-left: 5px solid var(--konst-red);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .provider-review-item:hover { border-color: var(--konst-dark); border-left-color: var(--konst-red); transform: translateY(-2px); }
+  .provider-review-empty {
+    padding: 1.5rem; background: #f8f9fa; border: 1px solid var(--konst-border);
+    border-left: 5px solid #176b4d; color: var(--konst-dark); font-weight: 700;
+  }
+  .provider-review-empty span { display: block; margin-top: 0.25rem; color: var(--konst-text); font-size: 0.9rem; font-weight: 500; }
+  .provider-review-meta { min-width: 0; }
+  .provider-review-name { color: var(--konst-dark); font-weight: 800; font-size: 1rem; }
+  .provider-review-detail { color: var(--konst-text); font-size: 0.88rem; overflow-wrap: anywhere; }
+  .provider-review-status { color: #8a4b08; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }
+  .provider-review-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .provider-review-actions button {
+    min-height: 42px; padding: 0.6rem 1rem; border: 2px solid var(--konst-dark);
+    font: inherit; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .provider-approve { background: var(--konst-dark); color: #fff; }
+  .provider-approve:hover { background: #176b4d; border-color: #176b4d !important; }
+  .provider-reject { background: #fff; color: var(--konst-dark); }
+  .provider-reject:hover { color: #b42318; border-color: #b42318 !important; }
+
   @media (max-width: 640px) {
     .dashboard-hero { padding: 2.5rem 1.5rem; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); }
     .stats-row { grid-template-columns: 1fr 1fr; }
+    .provider-review-item { align-items: flex-start; padding: 1rem; }
+    .provider-review-actions { width: 100%; }
+    .provider-review-actions form { flex: 1; }
+    .provider-review-actions button { width: 100%; }
   }
 </style>
 {% endblock %}
@@ -397,6 +429,41 @@
     </div>
   </div>
 
+  <!-- ═══ PENDING PROVIDER APPLICATIONS ════════════════════════════ -->
+  <div class="section-heading" style="margin-top:0.5rem;">
+    <h2>Provider Applications
+      <span style="background:var(--konst-red);color:#fff;font-size:0.85rem;font-weight:800;padding:0.2rem 0.6rem;margin-left:0.5rem;vertical-align:middle;">{{ pending_providers|length }}</span>
+    </h2>
+  </div>
+  {% if pending_providers %}
+  <div class="provider-review-list">
+    {% for pending in pending_providers %}
+    <article class="provider-review-item">
+      <div class="provider-review-meta">
+        <div class="provider-review-name">{{ pending.name }}</div>
+        <div class="provider-review-detail">{{ pending.email }} · Applied {{ pending.date_joined|date:"d M Y, h:i A" }}</div>
+        <div class="provider-review-status">Awaiting review</div>
+      </div>
+      <div class="provider-review-actions">
+        <form method="post" action="{% url 'dashboards:approve_provider' pending.id %}">
+          {% csrf_token %}
+          <button class="provider-approve" type="submit">Approve provider</button>
+        </form>
+        <form method="post" action="{% url 'dashboards:reject_provider' pending.id %}" onsubmit="return confirm('Reject and delete {{ pending.name }}\'s provider application?')">
+          {% csrf_token %}
+          <button class="provider-reject" type="submit">Reject</button>
+        </form>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="provider-review-empty">
+    No provider applications to review
+    <span>New provider signups will appear here until approved.</span>
+  </div>
+  {% endif %}
+
   <!-- ═══ PENDING ADMIN REQUESTS ════════════════════════════ -->
   {% if pending_admins %}
   <div class="section-heading" style="margin-top: 0.5rem;">
@@ -464,7 +531,9 @@
           </td>
           <td style="padding:0.9rem 1.25rem;color:var(--konst-text);">{{ u.date_joined|date:"d M Y" }}</td>
           <td style="padding:0.9rem 1.25rem;">
-            {% if u.is_active %}
+            {% if not u.is_approved %}
+              <span style="color:#b45309;font-weight:700;font-size:0.82rem;">&#9679; Awaiting approval</span>
+            {% elif u.is_active %}
               <span style="color:#16a34a;font-weight:700;font-size:0.82rem;">&#10003; Active</span>
             {% else %}
               <span style="color:#dc2626;font-weight:700;font-size:0.82rem;">&#10007; Inactive</span>

@@ -123,9 +123,10 @@ def login_view(request):
         password = request.POST.get('password')
         user     = authenticate(request, username=email, password=password)
         if user is not None:
-            # Block unapproved admin accounts
-            if user.role == 'admin' and not user.is_approved:
-                messages.error(request, 'Your admin account is pending approval. Please wait for the existing admin to approve your request.')
+            # Admin and provider accounts require approval before access.
+            if user.role in ('admin', 'owner') and not user.is_approved:
+                account_type = 'provider' if user.role == 'owner' else 'admin'
+                messages.error(request, f'Your {account_type} account is pending approval. Please wait for an administrator to review your request.')
             else:
                 login(request, user)
                 _send_login_alert(user)
@@ -239,7 +240,7 @@ def verify_otp_view(request):
             return redirect('core:login')
 
         # ── OTP Correct — Create user ──
-        is_approved = False if otp_data['role'] == 'admin' else True
+        is_approved = otp_data['role'] not in ('admin', 'owner')
         user = User.objects.create_user(
             email    = otp_data['email'],
             name     = otp_data['name'],
@@ -254,9 +255,12 @@ def verify_otp_view(request):
 
         _send_welcome_email(user)
 
-        if user.role == 'admin':
-            _notify_admins_of_pending_request(user)
-            messages.success(request, 'Your admin account has been created and is pending approval.')
+        if user.role in ('admin', 'owner'):
+            if user.role == 'admin':
+                _notify_admins_of_pending_request(user)
+                messages.success(request, 'Your admin account has been created and is pending approval.')
+            else:
+                messages.success(request, 'Your provider account has been created and is pending administrator approval.')
             return redirect('core:login')
 
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')

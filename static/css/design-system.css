@@ -4,47 +4,47 @@
    ===================================================================== */
 
 /* ─── 0. GOOGLE FONT IMPORT ─────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap');
 
 
 /* ─── 1. CSS CUSTOM PROPERTIES (DESIGN TOKENS) ──────────────────────── */
 :root {
-  /* Primary — Indigo */
-  --color-primary:        #6366f1;
-  --color-primary-hover:  #4f46e5;
-  --color-primary-glow:   #e0e7ff;
+  /* Primary — editorial crimson */
+  --color-primary:        #c8102e;
+  --color-primary-hover:  #a30d25;
+  --color-primary-glow:   #fae8eb;
 
   /* Secondary */
-  --color-secondary:      #f1f5f9;
-  --color-secondary-hover:#e2e8f0;
+  --color-secondary:      #f1f1f1;
+  --color-secondary-hover:#e5e5e5;
 
   /* Text */
-  --color-text-heading:   #0f172a;
-  --color-text-body:      #334155;
-  --color-text-muted:     #64748b;
+  --color-text-heading:   #181818;
+  --color-text-body:      #484848;
+  --color-text-muted:     #777777;
 
   /* Surfaces */
-  --color-bg-app:         #f8fafc;
+  --color-bg-app:         #f6f6f4;
   --color-surface:        #ffffff;
   --color-glass:          rgba(255, 255, 255, 0.75);
 
   /* Borders */
-  --color-border:         #e2e8f0;
-  --color-border-hover:   #cbd5e1;
+  --color-border:         #e1e1df;
+  --color-border-hover:   #c8c8c6;
 
   /* Accents */
-  --color-success:        #059669;
-  --color-success-bg:     #ecfdf5;
-  --color-amber:          #fbbf24;
-  --color-purple:         #6739b7;
+  --color-success:        #16815d;
+  --color-success-bg:     #e2f4ec;
+  --color-amber:          #e9a83a;
+  --color-purple:         #c8102e;
 
   /* Sidebar */
-  --color-sidebar-bg:     #0f172a;
+  --color-sidebar-bg:     #171717;
 
   /* Gradients */
-  --gradient-primary:     linear-gradient(135deg, #6366f1, #4f46e5);
-  --gradient-text:        linear-gradient(135deg, #0f172a 0%, #6366f1 100%);
-  --gradient-hero-radial: radial-gradient(ellipse at top right, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+  --gradient-primary:     linear-gradient(135deg, #a30d25, #d51e3c);
+  --gradient-text:        linear-gradient(135deg, #181818 0%, #c8102e 100%);
+  --gradient-hero-radial: radial-gradient(ellipse at top right, rgba(200, 16, 46, 0.08) 0%, transparent 60%);
 
   /* Radius */
   --radius-sm:   8px;
@@ -58,8 +58,8 @@
   --shadow-md:    0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
   --shadow-lg:    0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.03);
   --shadow-hover: 0 25px 50px -12px rgb(0 0 0 / 0.15);
-  --shadow-primary-glow: 0 6px 20px rgba(99, 102, 241, 0.45);
-  --shadow-sidebar-active: 0 4px 12px rgba(99, 102, 241, 0.4);
+  --shadow-primary-glow: 0 6px 20px rgba(200, 16, 46, 0.24);
+  --shadow-sidebar-active: 0 4px 12px rgba(200, 16, 46, 0.28);
 
   /* Transitions */
   --transition-fast:   0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -82,7 +82,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   background-color: var(--color-bg-app);
   color: var(--color-text-body);
   line-height: 1.6;

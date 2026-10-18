@@ -116,6 +116,7 @@ def admin_dashboard(request):
     import datetime
 
     pending_admins  = User.objects.filter(role='admin', is_approved=False).order_by('-date_joined')
+    pending_providers = User.objects.filter(role='owner', is_approved=False).order_by('-date_joined')
     recent_users    = User.objects.order_by('-date_joined')[:8]
     recent_bookings = Booking.objects.select_related('service', 'customer').order_by('-booking_date')[:8]
 
@@ -148,6 +149,7 @@ def admin_dashboard(request):
         'total_bookings':     Booking.objects.count(),
         'pending_bookings':   Booking.objects.filter(status='Pending').count(),
         'pending_admins':     pending_admins,
+        'pending_providers':  pending_providers,
         'recent_users':       recent_users,
         'recent_bookings':    recent_bookings,
         'month_labels':       json.dumps(month_labels),
@@ -192,6 +194,40 @@ def reject_admin(request, user_id):
         email,
     )
     messages.error(request, f"❌ {name}'s admin request has been rejected.")
+    return redirect('dashboards:admin')
+
+
+@login_required
+@require_POST
+def approve_provider(request, user_id):
+    if request.user.role != 'admin' or not request.user.is_approved:
+        return redirect('home')
+    provider = get_object_or_404(User, id=user_id, role='owner', is_approved=False)
+    provider.is_approved = True
+    provider.save(update_fields=['is_approved'])
+    _send_email(
+        'Your Provider Account Has Been Approved – LocalServices',
+        f'Hi {provider.name},\n\nYour provider account has been approved. You can now log in and manage your services.\n\n— LocalServices Team',
+        provider.email,
+    )
+    messages.success(request, f'{provider.name} is now an approved provider.')
+    return redirect('dashboards:admin')
+
+
+@login_required
+@require_POST
+def reject_provider(request, user_id):
+    if request.user.role != 'admin' or not request.user.is_approved:
+        return redirect('home')
+    provider = get_object_or_404(User, id=user_id, role='owner', is_approved=False)
+    name, email = provider.name, provider.email
+    provider.delete()
+    _send_email(
+        'Provider Application Update – LocalServices',
+        f'Hi {name},\n\nYour provider application was not approved. Please contact LocalServices support if you have questions.\n\n— LocalServices Team',
+        email,
+    )
+    messages.error(request, f'{name}\'s provider application was rejected.')
     return redirect('dashboards:admin')
 
 

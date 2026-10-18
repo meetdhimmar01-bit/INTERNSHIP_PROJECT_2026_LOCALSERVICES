@@ -12,6 +12,8 @@ urlpatterns = [
     # ── Admin: approve/reject admin accounts ─────────────────────────────────
     path('admin/approve/<int:user_id>/', views.approve_admin, name='approve_admin'),
     path('admin/reject/<int:user_id>/',  views.reject_admin,  name='reject_admin'),
+    path('admin/providers/<int:user_id>/approve/', views.approve_provider, name='approve_provider'),
+    path('admin/providers/<int:user_id>/reject/',  views.reject_provider,  name='reject_provider'),
 
     # ── Booking actions ───────────────────────────────────────────────────────
     path('booking/<int:booking_id>/cancel/',   views.cancel_booking,        name='cancel_booking'),
