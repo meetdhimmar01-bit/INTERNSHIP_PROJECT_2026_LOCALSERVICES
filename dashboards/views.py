@@ -174,7 +174,7 @@ def approve_admin(request, user_id):
     user.save()
     _send_email(
         '✅ Your Admin Account Has Been Approved – LocalServices',
-        f"Hi {user.name},\n\nYour admin account has been approved.\nLogin: http://127.0.0.1:8000/core/login/\n\n— LocalServices Team",
+        f"Hi {user.name},\n\nYour admin account has been approved.\nLogin: {settings.SITE_URL}/core/login/\n\n— LocalServices Team",
         user.email,
     )
     messages.success(request, f"✅ {user.name}'s admin account has been approved.")
@@ -270,7 +270,7 @@ def confirm_booking(request, booking_id):
                 'booking', '/dashboards/user/')
         _send_email(
             f'✅ Booking Confirmed – {booking.service.name}',
-            f"Hi {booking.customer.name},\n\nYour booking for \"{booking.service.name}\" on {booking.scheduled_date} has been confirmed by the provider.\n\nYou can now pay online:\nhttp://127.0.0.1:8000/services/payment/{booking.id}/\n\n— LocalServices Team",
+            f"Hi {booking.customer.name},\n\nYour booking for \"{booking.service.name}\" on {booking.scheduled_date} has been confirmed by the provider.\n\nYou can now pay online:\n{settings.SITE_URL}/services/payment/{booking.id}/\n\n— LocalServices Team",
             booking.customer.email,
         )
         messages.success(request, f'Booking #{booking.id} confirmed!')

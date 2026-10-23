@@ -186,6 +186,20 @@
       }
       .notif-badge.hidden { display: none; }
 
+      .nav-toggle {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        color: #fff;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        cursor: pointer;
+      }
+
+      .nav-toggle svg { width: 22px; height: 22px; }
+
       /* ── RESPONSIVE ─────────────────────────────────────────── */
       @media (max-width: 900px) {
         .site-navbar { padding: 0 1.5rem; }
@@ -229,6 +243,11 @@
           <a href="{% url 'core:login' %}" class="btn-nav-primary">Login</a>
         {% endif %}
       </div>
+      <button class="nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
     </nav>
 
     <!-- ═══ MESSAGES ══════════════════════════════════════════ -->
@@ -276,5 +295,34 @@
     setInterval(fetchNotifCount, 30000);
     </script>
     {% endif %}
+    <script>
+      const navToggle = document.querySelector('.nav-toggle');
+      const primaryNavigation = document.querySelector('.nav-right');
+      if (navToggle && primaryNavigation) {
+        document.body.classList.add('nav-menu-ready');
+        primaryNavigation.id = 'primary-navigation';
+        navToggle.addEventListener('click', () => {
+          const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
+          navToggle.setAttribute('aria-expanded', String(!isOpen));
+          navToggle.setAttribute('aria-label', isOpen ? 'Open navigation menu' : 'Close navigation menu');
+          primaryNavigation.classList.toggle('is-open', !isOpen);
+        });
+        primaryNavigation.addEventListener('click', (event) => {
+          if (event.target.closest('a')) {
+            navToggle.setAttribute('aria-expanded', 'false');
+            navToggle.setAttribute('aria-label', 'Open navigation menu');
+            primaryNavigation.classList.remove('is-open');
+          }
+        });
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && navToggle.getAttribute('aria-expanded') === 'true') {
+            navToggle.setAttribute('aria-expanded', 'false');
+            navToggle.setAttribute('aria-label', 'Open navigation menu');
+            primaryNavigation.classList.remove('is-open');
+            navToggle.focus();
+          }
+        });
+      }
+    </script>
   </body>
 </html>

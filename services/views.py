@@ -5,7 +5,14 @@ from django.db.models import Q, Avg
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from .models import Category, Service, Booking, Review, Wishlist
+from .models import Category, Service, Booking, Review, Wishlist, ProviderProfile
+
+
+def public_services():
+    """Return active services that belong to approved providers or are unowned."""
+    return Service.objects.filter(is_active=True).filter(
+        Q(owner__isnull=True) | Q(owner__is_approved=True)
+    )
 
 # ──────────────────────────────────────────────────────────────────────────────
 # HOME & SERVICE LIST
@@ -13,7 +20,7 @@ from .models import Category, Service, Booking, Review, Wishlist
 
 def home_view(request):
     categories = Category.objects.all()
-    top_services = Service.objects.filter(is_active=True)[:6]
+    top_services = public_services().select_related('category', 'owner').order_by('-id')[:6]
     return render(request, 'services/home.html', {
         'categories': categories,
         'top_services': top_services,
@@ -22,7 +29,7 @@ def home_view(request):
 
 def services_list(request):
     """Service listing with advanced search & filters."""
-    services = Service.objects.filter(is_active=True).select_related('category', 'owner')
+    services = public_services().select_related('category', 'owner')
     categories = Category.objects.all()
 
     # ── Search ──
@@ -92,13 +99,16 @@ def services_list(request):
 
 
 def service_detail(request, pk):
-    service = get_object_or_404(Service, pk=pk, is_active=True)
+    service = get_object_or_404(public_services(), pk=pk)
     from .models import ProviderAvailability
     from django.utils import timezone
     import datetime
 
     reviews = Review.objects.filter(booking__service=service).select_related('booking__customer')
     avg_rating = reviews.aggregate(avg=Avg('rating'))['avg']
+    provider_profile = None
+    if service.owner:
+        provider_profile = ProviderProfile.objects.filter(user=service.owner).first()
 
     # Upcoming availability slots for this service owner
     today = timezone.now().date()
@@ -161,6 +171,8 @@ def service_detail(request, pk):
         'avg_rating': avg_rating,
         'availability_slots': availability_slots,
         'is_wishlisted': is_wishlisted,
+        'provider_profile': provider_profile,
+        'verified_provider': bool(service.owner and service.owner.is_approved),
     })
 
 
@@ -170,7 +182,7 @@ def service_detail(request, pk):
 
 def map_view(request):
     """Map view with all services that have location data."""
-    services_qs = Service.objects.filter(is_active=True).select_related('category', 'owner')
+    services_qs = public_services().select_related('category', 'owner')
     services_data = []
     for s in services_qs:
         lat = float(s.latitude) if s.latitude else None
@@ -376,7 +388,7 @@ You have a new booking request on LocalServices!
   📍 Address  : {booking.address}
 
 Please login to your dashboard to Approve or Reject this booking:
-http://127.0.0.1:8000/dashboards/owner/
+{settings.SITE_URL}/dashboards/owner/
 
 — LocalServices Team
 """,

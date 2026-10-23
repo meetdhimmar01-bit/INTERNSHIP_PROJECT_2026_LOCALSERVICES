@@ -191,10 +191,66 @@
     color: var(--konst-dark);
   }
 
+  .featured-services {
+    padding: 0 4rem 5rem;
+  }
+
+  .featured-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .featured-service-card {
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--konst-border);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.055);
+    color: var(--konst-dark);
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .featured-service-card:hover {
+    color: var(--konst-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .featured-service-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    background: #ededeb;
+  }
+
+  .featured-service-placeholder {
+    display: grid;
+    aspect-ratio: 16 / 10;
+    place-items: center;
+    color: var(--konst-red);
+    background: #f3f1ef;
+  }
+
+  .featured-service-placeholder svg { width: 42px; height: 42px; }
+  .featured-service-content { padding: 1.2rem; }
+  .featured-service-category { margin-bottom: 0.35rem; color: var(--konst-red); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; }
+  .featured-service-name { margin: 0; color: var(--konst-dark); font-size: 1.15rem; font-weight: 800; }
+  .featured-service-footer { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-top: 1rem; }
+  .featured-service-price { color: var(--konst-dark); font-size: 1rem; font-weight: 800; }
+  .featured-provider { color: #176b4d; font-size: 0.76rem; font-weight: 700; }
+
   @media (max-width: 900px) {
     .home-hero { padding: 4rem 2rem; }
     .home-hero-title, .home-hero-subtitle { max-width: 100%; }
     .section-heading, .category-grid, .services-grid { padding: 0 2rem; }
+    .featured-services { padding: 0 2rem 3rem; }
+  }
+
+  @media (max-width: 640px) {
+    .featured-services { padding: 0 1rem 3rem; }
+    .featured-services-grid { grid-template-columns: 1fr; gap: 1rem; }
   }
 </style>
 {% endblock %}
@@ -203,7 +259,7 @@
 
   <div class="home-hero">
     <h1 class="home-hero-title">Expert home services, <span>on demand.</span></h1>
-    <p class="home-hero-subtitle">Book trusted professionals for cleaning, repair, and maintenance tasks. Verified experts ready to help you maintain your home.</p>
+    <p class="home-hero-subtitle">Book trusted local professionals for cleaning, repair, and maintenance. Providers are reviewed before their services go live.</p>
     
     <form method="GET" action="#services" class="search-bar-wrap">
       <div class="search-icon">
@@ -248,5 +304,36 @@
       <div class="glass-card"><div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/></svg></div><div class="cat-label">Carpentry</div></div>
     {% endfor %}
   </div>
+
+  {% if top_services %}
+  <div class="section-heading">
+    <h2>Featured services</h2>
+  </div>
+  <section class="featured-services" aria-label="Featured services">
+    <div class="featured-services-grid">
+      {% for service in top_services %}
+      <a href="{% url 'services:detail' service.id %}" class="featured-service-card">
+        {% if service.image %}
+          <img class="featured-service-image" src="{{ service.image.url }}" alt="{{ service.name }}">
+        {% else %}
+          <span class="featured-service-placeholder" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </span>
+        {% endif %}
+        <div class="featured-service-content">
+          <div class="featured-service-category">{{ service.category.name }}</div>
+          <h3 class="featured-service-name">{{ service.name }}</h3>
+          <div class="featured-service-footer">
+            <span class="featured-service-price">From ₹{{ service.base_price }}</span>
+            {% if service.owner and service.owner.is_approved %}
+              <span class="featured-provider">Approved provider</span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 
 {% endblock %}

@@ -28,7 +28,7 @@
   .dashboard-hero::before { display: none; }
 
   .dashboard-hero-title {
-    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-size: clamp(2rem, 5vw, 3.25rem);
     font-weight: 900;
     color: #ffffff;
     letter-spacing: -0.02em;
@@ -274,8 +274,8 @@
 
   <!-- ═══ HERO ══════════════════════════════════════════════ -->
   <div class="dashboard-hero">
-    <h1 class="dashboard-hero-title">Welcome back, <span>{{ request.user.name }}!</span></h1>
-    <p class="dashboard-hero-subtitle">User Dashboard – browse services and track your bookings here.</p>
+    <h1 class="dashboard-hero-title">User Dashboard, <span>{{ request.user.name }}!</span></h1>
+    <p class="dashboard-hero-subtitle">Browse services and track your bookings here.</p>
     <div class="dashboard-hero-actions">
       <a href="{% url 'home' %}" class="btn-primary-hero">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -384,7 +384,7 @@
                     <button type="submit" style="background:#fee2e2;color:#991b1b;border:none;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.04em;">&#x2715; Cancel</button>
                   </form>
                 {% else %}
-                  <span style="color:#1e40af;font-size:0.82rem;font-weight:700;">In Progress</span>
+                  <span class="status-badge status-confirmed">Provider confirmed</span>
                 {% endif %}
               </td>
             </tr>

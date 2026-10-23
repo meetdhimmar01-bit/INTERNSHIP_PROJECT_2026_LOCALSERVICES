@@ -1,0 +1,9 @@
+Django==6.1.2
+dj-database-url>=2.3,<4
+django-cloudinary-storage>=0.3,<1
+gunicorn>=23,<24
+Pillow>=12.3,<13
+psycopg2-binary>=2.9.13,<3
+python-dotenv>=1,<2
+razorpay==2.0.1
+whitenoise>=6.9,<7

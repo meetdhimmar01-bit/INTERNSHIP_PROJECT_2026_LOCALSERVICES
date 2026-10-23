@@ -53,7 +53,7 @@ Your account has been successfully created on LocalServices Management.
   👤 Role  : {user.role.capitalize()}
   🕐 Joined: {datetime.now().strftime('%d %b %Y, %I:%M %p')}
 
-You can now login at: http://127.0.0.1:8000/core/login/
+You can now login at: {settings.SITE_URL}/core/login/
 
 Thank you for joining us!
 
@@ -102,7 +102,7 @@ A new user has registered and is requesting Admin access on LocalServices Manage
   🕐 Time  : {datetime.now().strftime('%d %b %Y, %I:%M %p')}
 
 Please login to your Admin Dashboard to approve or reject this request:
-  http://127.0.0.1:8000/dashboards/admin/
+  {settings.SITE_URL}/dashboards/admin/
 
 — LocalServices Management (Automated Alert)
 """

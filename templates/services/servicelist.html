@@ -309,6 +309,44 @@
     margin-bottom: 1.25rem;
   }
 
+  .provider-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin: 1.5rem 0 0;
+    padding: 1.1rem 1.25rem;
+    max-width: 560px;
+    color: #f5f5f5;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  .provider-card-mark {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    place-items: center;
+    color: #fff;
+    background: #16815d;
+    border-radius: 50%;
+  }
+
+  .provider-card-mark svg { width: 22px; height: 22px; }
+  .provider-card-name { margin: 0 0 0.2rem; color: #fff; font-size: 1rem; font-weight: 700; }
+  .provider-card-status { color: #a8e7cd; font-size: 0.8rem; font-weight: 700; }
+  .provider-card-meta { margin: 0.4rem 0 0; color: #c5c5c5; font-size: 0.88rem; }
+
+  .service-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.65rem;
+    color: #16815d;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
   .detail-title {
     font-size: clamp(2rem, 3.5vw, 3rem);
     font-weight: 900;
@@ -510,6 +548,20 @@
     .list-hero-title, .list-hero-subtitle { max-width: 100%; }
     .section-heading, .list-container { padding: 0 2rem; }
   }
+
+  @media (max-width: 640px) {
+    .detail-hero { align-items: flex-start; padding: 2rem 1.25rem; gap: 1.25rem; }
+    .detail-hero-img, .detail-hero-img-placeholder { width: 92px; height: 92px; }
+    .detail-hero-img-placeholder svg { width: 38px; height: 38px; }
+    .detail-body { padding: 1.5rem 1rem; gap: 1.5rem; }
+    .booking-card { padding: 1.4rem; }
+    .highlights-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .highlight-card { padding: 1rem 0.6rem; }
+    .review-card { padding: 1.2rem; }
+    .detail-price-tag { padding: 0.75rem 1rem; }
+    .detail-price-amount { font-size: 1.75rem; }
+    .provider-card { padding: 0.9rem; }
+  }
 </style>
 {% endblock %}
 
@@ -521,7 +573,7 @@
 <div class="list-hero">
   <h1 class="list-hero-title">All available <span>services</span></h1>
   <p class="list-hero-subtitle">
-    Browse through our comprehensive list of verified professional services.
+    Browse services from providers approved by our team.
   </p>
 
   <form method="GET" action="{% url 'services:list' %}" class="search-bar-wrap">
@@ -648,6 +700,12 @@
     </div>
     <div class="svc-cat">{{ service.category.name }}</div>
     <div class="svc-name">{{ service.name }}</div>
+    {% if service.owner and service.owner.is_approved %}
+      <span class="service-verified" aria-label="Provider approved by LocalServices">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+        Approved provider
+      </span>
+    {% endif %}
   </a>
   {% empty %}
   <div style="grid-column:1/-1;padding:4rem;text-align:center;border:1px dashed var(--konst-border);background:#fff;">
@@ -688,6 +746,27 @@
       <span class="detail-price-amount">₹{{ service.base_price }}</span>
       <span class="detail-price-label">Base Price</span>
     </div>
+    {% if service.owner %}
+      <div class="provider-card">
+        <div class="provider-card-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg>
+        </div>
+        <div>
+          <p class="provider-card-name">{{ service.owner.name }}</p>
+          {% if verified_provider %}
+            <span class="provider-card-status">Approved provider</span>
+          {% endif %}
+          {% if provider_profile %}
+            {% if provider_profile.experience_years %}
+              <p class="provider-card-meta">{{ provider_profile.experience_years }} years of experience</p>
+            {% endif %}
+            {% if provider_profile.service_locations %}
+              <p class="provider-card-meta">Serving {{ provider_profile.service_locations }}</p>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
 
     {% if avg_rating %}
     <div class="avg-rating-wrap">
@@ -754,8 +833,8 @@
           <div class="highlight-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
-          <div class="highlight-title">Professionals</div>
-          <div class="highlight-val">Verified Experts</div>
+          <div class="highlight-title">Provider</div>
+          <div class="highlight-val">{% if verified_provider %}Approved{% else %}Marketplace listed{% endif %}</div>
         </div>
       </div>
     </div>

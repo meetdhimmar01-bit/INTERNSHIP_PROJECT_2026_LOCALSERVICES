@@ -18,11 +18,28 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.db import DatabaseError, connection
+from django.http import HttpResponse
+import logging
 from services.views import home_view
 from localservices.views import handler404 as custom_404, handler500 as custom_500
 
+logger = logging.getLogger(__name__)
+
+
+def health_check(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+    except DatabaseError:
+        logger.exception('Application health check failed while connecting to the database.')
+        return HttpResponse('unavailable', status=503)
+    return HttpResponse('ok')
+
+
 urlpatterns = [
     path('', home_view, name='home'),
+    path('health/', health_check, name='health'),
     path('admin/', admin.site.urls),
     path("core/", include("core.urls")),
     path("services/", include("services.urls")),
@@ -34,4 +51,3 @@ if settings.DEBUG:
 
 handler404 = custom_404
 handler500 = custom_500
-
